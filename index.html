@@ -276,7 +276,6 @@
         const CONSUMPTION_PER_MIN = 10;
         const taskMap = { '滅火攻擊': '滅', '人命搜救': '搜', '通風排煙': '排', '周界防護': '周', '侷限火勢': '侷', '殘火處理': '殘', '幕僚作業': '幕', 'RIT': 'RIT', '待命集結': '待' };
 
-        // 🌟 音效合成器 (Web Audio API) 🌟
         let audioCtx;
         function playBeep(freq, type, duration, vol=0.1) {
             try {
@@ -295,7 +294,7 @@
             } catch(e) {}
         }
         function playSound(type) {
-            if (type === 'sync') playBeep(880, 'sine', 0.1, 0.02); // 微弱的滴聲
+            if (type === 'sync') playBeep(880, 'sine', 0.1, 0.02);
             if (type === 'warn') { playBeep(600, 'square', 0.2, 0.1); setTimeout(()=>playBeep(600, 'square', 0.2, 0.1), 300); }
             if (type === 'danger') { playBeep(400, 'sawtooth', 0.5, 0.2); setTimeout(()=>playBeep(400, 'sawtooth', 0.5, 0.2), 600); }
             if (type === 'mayday') { playBeep(800, 'square', 0.5, 0.3); setTimeout(()=>playBeep(600, 'square', 0.5, 0.3), 500); }
@@ -395,13 +394,18 @@
             render(m4S, [lS.value, m2S.value, m3S.value]);
         }
 
-        function calculateAir(team) {
-            if (!team.usesAir) return 999;
-            // 真實的持續消耗計算 (每 6 秒平滑扣 1 bar)
+        // 🌟 獲取當前氣壓字串的輔助函式 🌟
+        function getAirStatus(team) {
+            if (!team.usesAir) return "";
             const elapsedMins = (Date.now() - team.startTime) / 60000;
             const current = Math.max(0, team.initialAir - Math.floor(elapsedMins * CONSUMPTION_PER_MIN));
-            
-            // 加入音效警示
+            return ` (氣壓:${current}b)`;
+        }
+
+        function calculateAir(team) {
+            if (!team.usesAir) return 999;
+            const elapsedMins = (Date.now() - team.startTime) / 60000;
+            const current = Math.max(0, team.initialAir - Math.floor(elapsedMins * CONSUMPTION_PER_MIN));
             if (current <= 100 && !team.n100) { addLog("氣量警告", `⚠️ [${team.location}] ${team.members.join('、')} 壓力低於 100b`); team.n100 = true; playSound('warn'); }
             if (current <= 50 && !team.n50) { addLog("緊急回撤", `🆘 [${team.location}] ${team.members.join('、')} 氣壓危急!`); team.n50 = true; playSound('danger'); }
             return current;
@@ -534,7 +538,6 @@
             }
         }
 
-        // 🌟 修正：任務選取與自動連動氣瓶邏輯 🌟
         function setTask(t) { 
             selectedTask = t; 
             document.querySelectorAll('.task-btn').forEach(b => {
@@ -542,7 +545,6 @@
                 else { b.classList.remove('active'); }
             });
             
-            // 自動連動氣瓶監控
             const airTasks = ['滅火攻擊', '人命搜救', '侷限火勢'];
             const airToggle = document.getElementById('air-toggle');
             if (airTasks.includes(t)) {
@@ -554,7 +556,6 @@
         }
 
         function submitAssignment() {
-            // 由於現代瀏覽器的限制，必須在使用者有第一次點擊(互動)時啟動音效引擎
             if (!audioCtx) { playSound('sync'); } 
 
             const l = document.getElementById('leader-select').value; 
@@ -571,6 +572,7 @@
             if (editingTeamUid) {
                 const team = deployedTeams.find(t => t.uid === editingTeamUid);
                 const oldMembers = team.members.join('、');
+                const oldAirStr = getAirStatus(team); // 取得變更前的氣壓
                 
                 team.leader = l;
                 team.members = ms;
@@ -579,7 +581,7 @@
                 let airLog = "";
                 if (team.usesAir !== usesAir) {
                     team.usesAir = usesAir;
-                    airLog = usesAir ? " (啟用氣瓶監控)" : " (關閉氣瓶監控)";
+                    airLog = usesAir ? ` (啟用氣瓶:${initAir}b)` : " (關閉氣瓶監控)";
                     if (usesAir) {
                         team.initialAir = initAir;
                         team.startTime = Date.now();
@@ -588,9 +590,10 @@
                 } else if (usesAir) {
                     team.initialAir = initAir;
                     team.startTime = Date.now();
+                    airLog = ` (氣壓重置:${initAir}b)`;
                 }
                 
-                addLog("小組更新", `🔄 [${team.location}] 狀態變更：${oldMembers} ➔ ${ms.join('、')} (${selectedTask})${airLog}`); 
+                addLog("小組更新", `🔄 [${team.location}] ${oldMembers} ➔ ${ms.join('、')} (${selectedTask})${oldAirStr}${airLog}`); 
                 
                 editingTeamUid = null;
                 const btn = document.getElementById('submit-btn');
@@ -609,7 +612,10 @@
                 initialAir: initAir, 
                 startTime: Date.now(), n100: false, n50: false 
             });
-            addLog("管制指派", `🚀 [${selectedSector}] 指派：${ms.join('、')} (${selectedTask})`); 
+            
+            // 🌟 部署時加入起始氣壓 🌟
+            const airStr = usesAir ? ` (氣壓:${initAir}b)` : "";
+            addLog("管制指派", `🚀 [${selectedSector}] 指派：${ms.join('、')} (${selectedTask})${airStr}`); 
             renderMap(); closeModal(); 
         }
 
@@ -628,17 +634,18 @@
             const team = deployedTeams.find(t => t.uid === uid);
             if (team && team.location !== newLoc) {
                 const old = team.location; 
+                const airStr = getAirStatus(team); // 🌟 取得移動瞬間的氣壓 🌟
                 team.location = newLoc;
 
                 if (newLoc === "待命區") {
                     team.task = "待命集結";
                     team.usesAir = false;
-                    addLog("安全撤出", `🔙 ${team.members.join('、')} 從 [${old}] 撤出至 [待命區] (氣瓶監控解除)`);
+                    addLog("安全撤出", `🔙 ${team.members.join('、')} 從 [${old}] 撤出至 [待命區]${airStr} (氣瓶解除)`);
                 } else if (newLoc === "RIT救援區") {
                     team.task = "RIT";
-                    addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]`); 
+                    addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]${airStr}`); 
                 } else {
-                    addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]`); 
+                    addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]${airStr}`); 
                 }
                 renderMap();
             }
@@ -648,7 +655,8 @@
             const idx = deployedTeams.findIndex(t => t.uid === uid);
             if (idx !== -1) {
                 const team = deployedTeams[idx];
-                addLog("徹底收隊", `👋 ${team.members.join('、')} 已從戰術板徹底移除`);
+                const airStr = getAirStatus(team); // 🌟 取得移除瞬間的氣壓 🌟
+                addLog("徹底收隊", `👋 ${team.members.join('、')} 已移除${airStr}`);
                 deployedTeams.splice(idx, 1);
                 renderMap(); closeModal();
             }
@@ -746,12 +754,6 @@
 
         function closePersonnelList() { document.getElementById('personnel-modal').classList.add('hidden'); }
 
-        function triggerMayday() {
-            document.body.style.backgroundColor = document.body.style.backgroundColor === 'red' ? '#020617' : 'red';
-            addLog("MAYDAY", "🚩 啟動 MAYDAY 求救信號！確認全場人員狀況！");
-            playSound('mayday');
-        }
-
         function toggleAirInput() { document.getElementById('air-input-section').style.display = document.getElementById('air-toggle').checked ? 'block' : 'none'; }
         
         function closeModal() { 
@@ -779,7 +781,6 @@
             const a = document.createElement("a"); a.href = canvas.toDataURL(); a.download = `TacticalBoard_${Date.now()}.png`; a.click();
         }
 
-        // 🌟 修復的系統定時器：每秒更新時鐘與氣量 🌟
         setInterval(() => { 
             const clock = document.getElementById('current-clock');
             if (clock) clock.innerText = new Date().toLocaleTimeString([], {hour12: false}); 
@@ -791,8 +792,7 @@
         function toggleManual() { document.getElementById('manual-modal').classList.toggle('hidden'); }
 
         // ================= 雲端自動同步邏輯 =================
-        // 🚨 記得把這裡替換成你的 Google Apps Script 網址！
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyZbxfdGMPVLCL2ytWP9iXQYGMbGR2wQ30pBTUjImjWsoy0f_IalpvryfhM0dVnuK7HWw/exec'; 
+        const GAS_WEB_APP_URL = '請貼上你的網頁應用程式網址'; 
         
         const d = new Date();
         const SESSION_NAME = '火警_' + 
@@ -802,7 +802,7 @@
         let lastSyncedLogIndex = 0; 
 
         async function syncToCloud() {
-            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請至後台貼上你的網頁應用程式網址') return;
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') return;
 
             const logsToSync = logHistory.slice(lastSyncedLogIndex);
             if (logsToSync.length === 0) return; 
@@ -830,7 +830,7 @@
                     lastSyncedLogIndex += logsToSync.length; 
                     document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
                     document.getElementById('sync-text').innerText = `已同步 (${SESSION_NAME})`;
-                    playSound('sync'); // 同步成功播放微弱提示音
+                    playSound('sync'); 
                 }
             } catch (e) {
                 document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-red-500';
