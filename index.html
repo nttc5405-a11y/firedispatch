@@ -61,8 +61,11 @@
     <div class="flex-1 flex flex-col p-4 overflow-y-auto">
         <div class="mb-4 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-black text-red-500 italic tracking-tighter">TACTICAL COMMAND</h1>
-                <p id="sync-status" class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-2">● CHENGGONG FIRE UNIT CONNECTED</p>
+                <h1 class="text-2xl font-black text-red-500 italic tracking-tighter flex items-center gap-3">
+                    TACTICAL COMMAND
+                    <span id="current-clock" class="bg-slate-800 px-3 py-1 rounded-lg text-white font-mono text-sm shadow-inner tracking-widest border border-slate-700">--:--:--</span>
+                </h1>
+                <p id="sync-status" class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-2 mt-1">● CHENGGONG FIRE UNIT CONNECTED</p>
                 
                 <div class="flex gap-2 mt-1 flex-wrap">
                     <div onclick="showPersonnelList('total')" class="cursor-pointer hover:bg-slate-800 active:scale-95 transition-all bg-slate-900 border border-blue-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
@@ -83,7 +86,7 @@
                 <button onclick="toggleManual()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center border border-slate-700 shadow-lg">
                     <span class="text-blue-400 font-bold">？</span>
                 </button>
-                <button onclick="triggerMayday()" class="px-6 py-2 bg-red-600 rounded-xl text-xs font-black shadow-lg">🚨 MAYDAY</button>
+                <button onclick="triggerMayday()" class="px-6 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-black shadow-lg shadow-red-600/50 active:scale-95 transition-all">🚨 MAYDAY</button>
             </div>
         </div>
 
@@ -139,8 +142,8 @@
             <div class="flex flex-col h-[30vh] lg:h-[calc(100vh-130px)]">
                 <div id="status-board" class="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-[11px] leading-relaxed bg-slate-950/50"></div>
                 <div class="p-4 bg-slate-950 border-t border-slate-800 grid grid-cols-2 gap-2">
-                    <button onclick="exportLogs()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black border border-slate-700">匯出 CSV</button>
-                    <button onclick="captureScreen()" class="py-3 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-black border border-blue-600">戰術截圖</button>
+                    <button onclick="exportLogs()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black border border-slate-700 transition-colors">匯出 CSV</button>
+                    <button onclick="captureScreen()" class="py-3 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-black border border-blue-600 transition-colors">戰術截圖</button>
                 </div>
             </div>
         </details>
@@ -239,23 +242,24 @@
                         <span class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">1</span> 
                         人員報到與臨時建置
                     </h4>
-                    <p class="text-slate-400 pl-8">若現場有未在清冊內的友軍支援，點擊彈窗內的<b class="text-blue-400">「➕ 臨時建置」</b>，輸入單位與姓名即可立刻派兵上陣。新報到人員請統一先配置於右下角的<b class="text-slate-300">「待命區」</b>。</p>
+                    <p class="text-slate-400 pl-8">點擊左上角的三個<b>統計儀表板</b>可快速查看對應的人員名單。若有友軍支援，點擊彈窗內<b class="text-blue-400">「➕ 臨時建置」</b>輸入單位姓名。新報到人員請統一先配置於右下角的<b class="text-slate-300">「待命區」</b>。</p>
                 </section>
 
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
                         <span class="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center text-[10px]">2</span> 
-                        氣壓回報與動態編輯
+                        自動連動與氣壓回報
                     </h4>
                     <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
-                        <li><b>殘氣回報：</b>點擊分區 ➔ 拉動該組的<b>「殘氣更新滑塊」</b>，系統將自動重置消耗計時。氣壓每分鐘扣除10bar (每6秒扣1bar)。</li>
-                        <li><b>增減人員：</b>點擊分區內該小組的 <b class="text-blue-400">編輯/增減</b> 按鈕，即可臨時加入/移除隊員或更改狀態。</li>
+                        <li><b>任務連動：</b>選擇「滅、搜、侷」將<b class="text-blue-300">自動開啟</b>氣瓶監控；選「待命」將自動關閉。</li>
+                        <li><b>殘氣回報：</b>點擊分區 ➔ 拉動該組的<b>「殘氣更新滑塊」</b>以重置計時。氣壓每分鐘真實扣除10bar (每6秒扣1bar)。</li>
+                        <li><b>聲音警報：</b>當殘氣低於100b(警告)及50b(危險)時，系統會發出警示音。</li>
                     </ul>
                 </section>
 
                 <section class="space-y-2 border-l-4 border-emerald-500 pl-4 bg-emerald-900/10 py-3 rounded-r-lg">
                     <h4 class="text-emerald-400 font-black flex items-center gap-2">🔄 拖曳撤出 (Drag & Drop)</h4>
-                    <p class="text-slate-400">當人員退出熱區時，請直接長按小組名牌<b>拖曳至右下角「待命區」</b>。系統會自動將該組任務改為「待」，並<b>自動解除氣瓶監控</b>。若需完全收隊，請點擊彈窗內的紅色「徹底撤離」按鈕。</p>
+                    <p class="text-slate-400">當人員退出熱區時，請長按小組名牌<b>拖曳至右下角「待命區」</b>。系統會自動將該組任務改為「待」，並<b>自動解除氣瓶監控</b>。若需完全收隊，請點擊彈窗內的紅色「徹底撤離」按鈕。</p>
                 </section>
 
                 <div class="pt-4 text-center">
@@ -271,6 +275,31 @@
         let editingTeamUid = null; 
         const CONSUMPTION_PER_MIN = 10;
         const taskMap = { '滅火攻擊': '滅', '人命搜救': '搜', '通風排煙': '排', '周界防護': '周', '侷限火勢': '侷', '殘火處理': '殘', '幕僚作業': '幕', 'RIT': 'RIT', '待命集結': '待' };
+
+        // 🌟 音效合成器 (Web Audio API) 🌟
+        let audioCtx;
+        function playBeep(freq, type, duration, vol=0.1) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+        function playSound(type) {
+            if (type === 'sync') playBeep(880, 'sine', 0.1, 0.02); // 微弱的滴聲
+            if (type === 'warn') { playBeep(600, 'square', 0.2, 0.1); setTimeout(()=>playBeep(600, 'square', 0.2, 0.1), 300); }
+            if (type === 'danger') { playBeep(400, 'sawtooth', 0.5, 0.2); setTimeout(()=>playBeep(400, 'sawtooth', 0.5, 0.2), 600); }
+            if (type === 'mayday') { playBeep(800, 'square', 0.5, 0.3); setTimeout(()=>playBeep(600, 'square', 0.5, 0.3), 500); }
+        }
 
         async function loadPersonnel() {
             try {
@@ -368,10 +397,13 @@
 
         function calculateAir(team) {
             if (!team.usesAir) return 999;
+            // 真實的持續消耗計算 (每 6 秒平滑扣 1 bar)
             const elapsedMins = (Date.now() - team.startTime) / 60000;
             const current = Math.max(0, team.initialAir - Math.floor(elapsedMins * CONSUMPTION_PER_MIN));
-            if (current <= 100 && !team.n100) { addLog("氣量警告", `⚠️ [${team.location}] ${team.members.join('、')} 壓力低於 100b`); team.n100 = true; }
-            if (current <= 50 && !team.n50) { addLog("緊急回撤", `🆘 [${team.location}] ${team.members.join('、')} 氣壓危急!`); team.n50 = true; }
+            
+            // 加入音效警示
+            if (current <= 100 && !team.n100) { addLog("氣量警告", `⚠️ [${team.location}] ${team.members.join('、')} 壓力低於 100b`); team.n100 = true; playSound('warn'); }
+            if (current <= 50 && !team.n50) { addLog("緊急回撤", `🆘 [${team.location}] ${team.members.join('、')} 氣壓危急!`); team.n50 = true; playSound('danger'); }
             return current;
         }
 
@@ -445,8 +477,6 @@
             
             if (name === "待命區") {
                 setTask('待命集結');
-                document.getElementById('air-toggle').checked = false;
-                toggleAirInput();
             } else if (name === "RIT救援區") {
                 setTask('RIT');
             } else {
@@ -504,7 +534,29 @@
             }
         }
 
+        // 🌟 修正：任務選取與自動連動氣瓶邏輯 🌟
+        function setTask(t) { 
+            selectedTask = t; 
+            document.querySelectorAll('.task-btn').forEach(b => {
+                if (b.id === 'btn-' + taskMap[t]) { b.classList.add('active'); } 
+                else { b.classList.remove('active'); }
+            });
+            
+            // 自動連動氣瓶監控
+            const airTasks = ['滅火攻擊', '人命搜救', '侷限火勢'];
+            const airToggle = document.getElementById('air-toggle');
+            if (airTasks.includes(t)) {
+                airToggle.checked = true;
+            } else if (t === '待命集結') {
+                airToggle.checked = false;
+            }
+            toggleAirInput();
+        }
+
         function submitAssignment() {
+            // 由於現代瀏覽器的限制，必須在使用者有第一次點擊(互動)時啟動音效引擎
+            if (!audioCtx) { playSound('sync'); } 
+
             const l = document.getElementById('leader-select').value; 
             if (!l) { alert('請選擇帶隊官!'); return; }
             
@@ -697,21 +749,13 @@
         function triggerMayday() {
             document.body.style.backgroundColor = document.body.style.backgroundColor === 'red' ? '#020617' : 'red';
             addLog("MAYDAY", "🚩 啟動 MAYDAY 求救信號！確認全場人員狀況！");
-        }
-
-        function setTask(t) { 
-            selectedTask = t; 
-            document.querySelectorAll('.task-btn').forEach(b => {
-                if (b.id === 'btn-' + taskMap[t]) { b.classList.add('active'); } 
-                else { b.classList.remove('active'); }
-            });
+            playSound('mayday');
         }
 
         function toggleAirInput() { document.getElementById('air-input-section').style.display = document.getElementById('air-toggle').checked ? 'block' : 'none'; }
         
         function closeModal() { 
             document.getElementById('modal').classList.add('hidden'); 
-            
             editingTeamUid = null;
             const btn = document.getElementById('submit-btn');
             if(btn && btn.classList.contains('bg-orange-600')) {
@@ -735,19 +779,19 @@
             const a = document.createElement("a"); a.href = canvas.toDataURL(); a.download = `TacticalBoard_${Date.now()}.png`; a.click();
         }
 
+        // 🌟 修復的系統定時器：每秒更新時鐘與氣量 🌟
         setInterval(() => { 
-            document.getElementById('current-clock').innerText = new Date().toLocaleTimeString([], {hour12: false}); 
+            const clock = document.getElementById('current-clock');
+            if (clock) clock.innerText = new Date().toLocaleTimeString([], {hour12: false}); 
             renderMap(); 
         }, 1000);
         
         window.onload = () => { loadPersonnel(); setTask('待命集結'); renderMap(); };
 
-        function toggleManual() {
-            document.getElementById('manual-modal').classList.toggle('hidden');
-        }
+        function toggleManual() { document.getElementById('manual-modal').classList.toggle('hidden'); }
 
         // ================= 雲端自動同步邏輯 =================
-        // 🚨 替換成你剛剛在 Google Apps Script 取得的網址 🚨
+        // 🚨 記得把這裡替換成你的 Google Apps Script 網址！
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxXEXwPnOkKJE9rbSL8mZZAYFXHHqKMvrXAlLti2wGD3vbWrdRjLJyudZtQcYbQDMy4Yg/exec'; 
         
         const d = new Date();
@@ -785,20 +829,20 @@
                 if(result.status === 'success') {
                     lastSyncedLogIndex += logsToSync.length; 
                     document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
-                    document.getElementById('sync-text').innerText = `已同步 (分頁: ${SESSION_NAME})`;
+                    document.getElementById('sync-text').innerText = `已同步 (${SESSION_NAME})`;
+                    playSound('sync'); // 同步成功播放微弱提示音
                 }
             } catch (e) {
                 document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-red-500';
-                document.getElementById('sync-text').innerText = '同步失敗，將於下分鐘重試';
+                document.getElementById('sync-text').innerText = '同步失敗重試中';
             }
         }
 
         setInterval(syncToCloud, 60000); 
-        // ================= 雲端自動同步邏輯結束 =================
+        // =================================================
 
     </script>
     <script>
-    // 防護語法
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.onkeydown = function(e) {
         if (e.keyCode === 123) return false;
