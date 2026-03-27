@@ -613,5 +613,24 @@
         }
         // 👆 貼上這段開關說明的程式碼 👆
     </script>
+    <script>
+    // 禁用右鍵選單
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    // 禁用常見的開發者工具快捷鍵與選取功能
+    document.onkeydown = function(e) {
+        // 鎖定 F12
+        if (e.keyCode === 123) return false;
+        // 鎖定 Ctrl+Shift+I (開發者工具) / Ctrl+Shift+C (元素審查) / Ctrl+Shift+J (主控台)
+        if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) return false;
+        // 鎖定 Ctrl+U (檢視原始碼)
+        if (e.ctrlKey && e.keyCode === 85) return false;
+        // 鎖定 Ctrl+S (網頁另存新檔)
+        if (e.ctrlKey && e.keyCode === 83) return false;
+    };
+    
+    // 禁用文字選取與複製
+    document.addEventListener('selectstart', e => e.preventDefault());
+</script>
 </body>
 </html>
