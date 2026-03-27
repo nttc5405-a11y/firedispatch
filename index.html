@@ -3,16 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>火場戰術管制系統 - 實戰版</title>
+    <title>火場戰術管制系統 - 實戰增強版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- 引入觸控拖曳支援套件 -->
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
-        @keyframes blink-red { 0%, 100% { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.4); } 50% { border-color: transparent; background-color: transparent; } }
-        @keyframes blink-orange { 0%, 100% { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.3); } 50% { border-color: transparent; background-color: transparent; } }
-        .warning-blink { animation: blink-red 1s infinite; border-width: 4px; }
-        .report-blink { animation: blink-orange 1.5s infinite; border-width: 4px; }
+        /* 呼吸燈動畫 */
+        @keyframes pulse-red {
+            0%, 100% { border-color: #ef4444; box-shadow: 0 0 0px rgba(239, 68, 68, 0); background-color: rgba(239, 68, 68, 0.4); }
+            50% { border-color: #f87171; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); background-color: rgba(239, 68, 68, 0.2); }
+        }
+        @keyframes pulse-orange {
+            0%, 100% { border-color: #f59e0b; box-shadow: 0 0 0px rgba(245, 158, 11, 0); background-color: rgba(245, 158, 11, 0.3); }
+            50% { border-color: #fbbf24; box-shadow: 0 0 12px rgba(245, 158, 11, 0.5); background-color: rgba(245, 158, 11, 0.1); }
+        }
+        @keyframes blink-blue { 0%, 100% { border-color: #3b82f6; } 50% { border-color: transparent; } }
+
+        .warning-red { animation: pulse-red 1.2s infinite; border-width: 3px !important; }
+        .warning-orange { animation: pulse-orange 2s infinite; border-width: 3px !important; }
+        .report-blink { animation: blink-blue 1.5s infinite; border-width: 3px !important; }
+
         .sector-btn { transition: all 0.2s; min-height: 115px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; border-radius: 0.75rem; border-width: 2px; cursor: pointer; overflow: hidden; position: relative; }
         .drag-over { border: 2px dashed #3b82f6 !important; background-color: rgba(59, 130, 246, 0.3) !important; }
         body { background-color: #020617; color: #f8fafc; user-select: none; overflow-x: hidden; touch-action: manipulation; }
@@ -20,18 +30,12 @@
         .bg-outside { background-color: #064e3b; border-color: #065f46; }
         .grid-layout { display: grid; grid-template-columns: 80px 1fr 80px; gap: 12px; max-width: 650px; margin: 0 auto; }
         
-        /* 修正下拉選單樣式 */
         select { background-color: #0f172a !important; color: #ffffff !important; font-weight: bold; border: 1px solid #334155; padding: 8px; border-radius: 8px; width: 100%; appearance: none; }
-        select option { background-color: #0f172a; color: white; }
-        
         .draggable-team { cursor: grab; padding: 4px 6px; border-radius: 6px; width: 100%; background-color: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 4px; touch-action: none; }
-        .task-tag { padding: 1px 4px; border-radius: 3px; color: white; font-weight: 900; font-size: 9px; margin-right: 3px; text-shadow: 0 1px 1px rgba(0,0,0,0.5); }
+        .task-tag { padding: 1px 4px; border-radius: 3px; color: white; font-weight: 900; font-size: 9px; margin-right: 3px; }
         
-        /* 任務色彩定義 */
         .task-滅 { background-color: #ef4444; } .task-搜 { background-color: #f97316; } .task-周 { background-color: #3b82f6; } 
         .task-侷 { background-color: #10b981; } .task-幕 { background-color: #a855f7; } .task-殘 { background-color: #92400e; } .task-排 { background-color: #06b6d4; }
-        
-        @media (max-width: 640px) { .grid-layout { grid-template-columns: 75px 1fr 75px; gap: 8px; } }
     </style>
 </head>
 <body class="p-4 font-sans pb-32">
@@ -61,14 +65,6 @@
                     <button onclick="adjustFloors(1)" class="w-7 h-7 bg-slate-800 rounded-full border border-slate-700">+</button>
                 </div>
             </div>
-            <div class="flex items-center justify-between border-t border-slate-800 pt-2">
-                <span class="text-[10px] text-slate-500 font-bold uppercase">Units / 棟數</span>
-                <div class="flex items-center gap-4">
-                    <button onclick="adjustUnits(-1)" class="w-7 h-7 bg-slate-800 rounded-full border border-slate-700">-</button>
-                    <span id="unit-display" class="font-mono font-bold text-emerald-400">1</span>
-                    <button onclick="adjustUnits(1)" class="w-7 h-7 bg-slate-800 rounded-full border border-slate-700">+</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -82,7 +78,6 @@
         </div>
     </div>
 
-    <!-- 底部功能與日誌 -->
     <div class="fixed bottom-4 left-4 right-4 z-40">
         <details class="group bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
             <summary class="flex justify-between items-center p-4 cursor-pointer list-none hover:bg-slate-800">
@@ -100,7 +95,6 @@
         </details>
     </div>
 
-    <!-- 彈窗 -->
     <div id="modal" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden p-4 z-50">
         <div class="bg-slate-900 w-full max-w-md rounded-2xl border border-slate-700 shadow-2xl flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center p-6 border-b border-slate-800">
@@ -108,44 +102,30 @@
                 <button onclick="closeModal()" class="text-slate-500 text-2xl">&times;</button>
             </div>
             <div class="p-6 overflow-y-auto space-y-6">
-                <!-- 現有小組清單 -->
                 <div id="current-teams-list" class="space-y-4"></div>
-                
-                <!-- 新增指派表單 -->
                 <div class="pt-6 border-t border-slate-800 space-y-4">
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
                         <label class="text-[10px] text-slate-500 block mb-2 font-bold uppercase tracking-widest">單位與人員選擇</label>
                         <select id="unit-select" onchange="updateMemberOptions()" class="mb-3"></select>
                         <div class="mb-3">
                             <label class="text-[9px] text-blue-400 font-bold block mb-1">⭐ 帶隊官</label>
-                            <select id="leader-select" onchange="updateMemberOptions()" style="border: 2px solid #3b82f6; background-color: rgba(59,130,246,0.1);"></select>
+                            <select id="leader-select" onchange="updateMemberOptions()" style="border: 2px solid #3b82f6;"></select>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <select id="member-2-select" onchange="updateMemberOptions()"></select>
                             <select id="member-3-select" onchange="updateMemberOptions()"></select>
                         </div>
                     </div>
-                    
-                    <div class="space-y-3">
-                        <label class="text-[10px] text-slate-500 block font-bold uppercase tracking-widest text-center">任務指派</label>
-                        <div class="grid grid-cols-4 gap-2">
-                            <button onclick="setTask('滅火攻擊')" id="btn-滅" class="task-btn py-3 bg-red-600/20 rounded-xl text-[10px] border-2 border-red-600/40 text-red-100 font-black">滅</button>
-                            <button onclick="setTask('人命搜救')" id="btn-搜" class="task-btn py-3 bg-orange-600/20 rounded-xl text-[10px] border-2 border-orange-600/40 text-orange-100 font-black">搜</button>
-                            <button onclick="setTask('周界防護')" id="btn-周" class="task-btn py-3 bg-blue-600/20 rounded-xl text-[10px] border-2 border-blue-600/40 text-blue-100 font-black">周</button>
-                            <button onclick="setTask('侷限火勢')" id="btn-侷" class="task-btn py-3 bg-emerald-600/20 rounded-xl text-[10px] border-2 border-emerald-600/40 text-emerald-100 font-black">侷</button>
-                        </div>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="setTask('幕僚作業')" id="btn-幕" class="task-btn py-3 bg-purple-600/20 rounded-xl text-[10px] border-2 border-purple-600/40 text-purple-100 font-black">幕</button>
-                            <button onclick="setTask('殘火處理')" id="btn-殘" class="task-btn py-3 bg-amber-800/20 rounded-xl text-[10px] border-2 border-amber-800/40 text-amber-100 font-black">殘</button>
-                            <button onclick="setTask('通風排煙')" id="btn-排" class="task-btn py-3 bg-cyan-600/20 rounded-xl text-[10px] border-2 border-cyan-600/40 text-cyan-100 font-black">排</button>
-                        </div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setTask('滅火攻擊')" id="btn-滅" class="task-btn py-3 bg-red-600/20 rounded-xl text-[10px] border-2 border-red-600/40 text-red-100 font-black">滅</button>
+                        <button onclick="setTask('人命搜救')" id="btn-搜" class="task-btn py-3 bg-orange-600/20 rounded-xl text-[10px] border-2 border-orange-600/40 text-orange-100 font-black">搜</button>
+                        <button onclick="setTask('周界防護')" id="btn-周" class="task-btn py-3 bg-blue-600/20 rounded-xl text-[10px] border-2 border-blue-600/40 text-blue-100 font-black">周</button>
+                        <button onclick="setTask('侷限火勢')" id="btn-侷" class="task-btn py-3 bg-emerald-600/20 rounded-xl text-[10px] border-2 border-emerald-600/40 text-emerald-100 font-black">侷</button>
                     </div>
-
                     <div class="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg border border-slate-700/50">
-                        <span class="text-xs text-slate-300">使用氣瓶耗氣模式</span>
+                        <span class="text-xs text-slate-300">氣瓶耗氣模式</span>
                         <input type="checkbox" id="air-toggle" checked onchange="toggleAirInput()" class="w-5 h-5 accent-blue-500">
                     </div>
-
                     <div id="air-input-section" class="flex flex-col gap-2">
                         <div class="flex justify-between text-[10px] text-slate-400 font-bold"><span>起始壓力</span><span id="new-air-val" class="text-emerald-400 font-mono text-sm">250b</span></div>
                         <input type="range" id="new-air-slider" min="0" max="300" step="10" value="250" oninput="document.getElementById('new-air-val').innerText=this.value+'b'" class="w-full accent-red-500">
@@ -159,14 +139,13 @@
     <script>
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT3K4j2T7zex1jjPzVPoWzf1HBflnE_nu2tzv9m_3BKJbovxgDAY5W9wea5RdWer8QXqEEDZEitCOGB/pub?output=csv';
         let personnelData = {}, currentScene = 'building', floorCount = 3, unitCount = 1, selectedSector = null, selectedTask = '滅火攻擊', deployedTeams = [], logHistory = [];
-        const CONSUMPTION_PER_MIN = 10, WARNING_AIR = 50, REPORT_INTERVAL = 10 * 60 * 1000;
+        const CONSUMPTION_PER_MIN = 10, REPORT_INTERVAL = 10 * 60 * 1000;
         const taskMap = { '滅火攻擊': '滅', '人命搜救': '搜', '通風排煙': '排', '周界防護': '周', '侷限火勢': '侷', '殘火處理': '殘', '幕僚作業': '幕' };
 
         async function loadPersonnel() {
             const statusEl = document.getElementById('sync-status');
             try {
                 const res = await fetch(GOOGLE_SHEET_CSV_URL);
-                if (!res.ok) throw new Error();
                 const text = await res.text();
                 personnelData = {};
                 text.split(/\r?\n/).slice(1).forEach(r => {
@@ -195,19 +174,12 @@
             const unit = document.getElementById('unit-select').value;
             const lS = document.getElementById('leader-select'), m2S = document.getElementById('member-2-select'), m3S = document.getElementById('member-3-select');
             const cL = lS.value, c2 = m2S.value, c3 = m3S.value;
-            
-            // 收集全場已指派人員 (不含目前正在編輯的組別)
             const globalDeployed = new Set(); 
             deployedTeams.forEach(t => t.members.forEach(m => globalDeployed.add(m)));
-            
-            let pool = (unit === "ALL" ? [].concat(...Object.values(personnelData)) : personnelData[unit] || [])
-                       .filter(n => !globalDeployed.has(n));
-
+            let pool = (unit === "ALL" ? [].concat(...Object.values(personnelData)) : personnelData[unit] || []).filter(n => !globalDeployed.has(n));
             const render = (el, cur, others) => {
-                let opts = [...pool]; 
-                if (cur && !opts.includes(cur)) opts.push(cur); // 保留目前已選
-                opts = opts.filter(n => !others.includes(n)); // 排除本組其他人
-                
+                let opts = [...pool]; if (cur && !opts.includes(cur)) opts.push(cur); 
+                opts = opts.filter(n => !others.includes(n));
                 el.innerHTML = `<option value="">(選擇人員)</option>` + opts.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
                 el.value = cur;
             };
@@ -219,40 +191,47 @@
             const elapsedMins = (Date.now() - team.startTime) / 60000;
             const current = Math.max(0, team.initialAir - Math.floor(elapsedMins * CONSUMPTION_PER_MIN));
             
-            // 自動警報日誌
-            if (current <= 100 && !team.n100) { addLog("氣量警告", `${team.leader} 壓力低於 100b`); team.n100 = true; }
-            if (current <= 50 && !team.n50) { addLog("緊急警告", `${team.leader} 壓力低於 50b!`); team.n50 = true; }
+            // 自動警告與紀錄
+            if (current <= 100 && !team.n100) { 
+                addLog("氣量警告(100b)", `⚠️ [${team.location}] ${team.members.join('、')} 壓力低於 100b`); 
+                team.n100 = true; 
+            }
+            if (current <= 50 && !team.n50) { 
+                addLog("緊急警告(50b)", `🆘 [${team.location}] ${team.members.join('、')} 壓力低於 50b! 請立即撤離!`); 
+                team.n50 = true; 
+            }
             return current;
         }
 
         function createBtn(name, isInside = true) {
             const teams = deployedTeams.filter(t => t.location === name);
-            let crit = teams.some(t => t.usesAir && calculateAir(t) <= WARNING_AIR);
-            let remind = teams.some(t => (Date.now() - t.lastReport) >= REPORT_INTERVAL);
+            
+            // 判斷該區域最高級別的警告
+            let air50 = teams.some(t => t.usesAir && calculateAir(t) <= 50);
+            let air100 = teams.some(t => t.usesAir && calculateAir(t) <= 100);
+            let overdue = teams.some(t => (Date.now() - t.lastReport) >= REPORT_INTERVAL);
+            
+            let statusClass = air50 ? 'warning-red' : (air100 ? 'warning-orange' : (overdue ? 'report-blink' : 'border-slate-700/50'));
             
             const btn = document.createElement('div');
-            btn.className = `sector-btn p-2 w-full ${isInside ? 'bg-inside' : 'bg-outside'} ${crit ? 'warning-blink' : (remind ? 'report-blink' : 'border-slate-700/50')}`;
+            btn.className = `sector-btn p-2 w-full ${isInside ? 'bg-inside' : 'bg-outside'} ${statusClass}`;
             btn.setAttribute('ondragover', 'event.preventDefault(); this.classList.add("drag-over");');
             btn.setAttribute('ondragleave', 'this.classList.remove("drag-over");');
             btn.setAttribute('ondrop', `handleDrop(event, '${name}')`);
-            
             btn.onclick = (e) => { if(!e.target.closest('.draggable-team')) openModal(name); };
 
-            let content = `<div class="w-full flex justify-between items-center mb-1"><span class="text-[7px] font-black opacity-30 uppercase">${name}</span><span class="text-[9px] opacity-20">⚙️</span></div><div class="w-full overflow-hidden">`;
-            
+            let content = `<div class="w-full flex justify-between items-center mb-1"><span class="text-[7px] font-black opacity-30 uppercase">${name}</span></div><div class="w-full overflow-hidden">`;
             teams.forEach(t => {
                 const air = calculateAir(t); 
                 const airDisp = t.usesAir ? `${air}b` : '---';
-                const overdue = (Date.now() - t.lastReport) >= REPORT_INTERVAL;
                 content += `<div class="draggable-team" draggable="true" ondragstart="event.dataTransfer.setData('uid', '${t.uid}')">
                     <div class="flex items-center justify-between text-[9px] font-bold">
                         <span><span class="task-tag task-${taskMap[t.task]}">${taskMap[t.task]}</span>${t.leader}${t.members.length>1?'+'+(t.members.length-1):''}</span>
-                        <span class="${t.usesAir && air <= 50 ? 'text-red-500 animate-pulse' : (overdue ? 'text-amber-500' : 'text-emerald-400')}">${airDisp}</span>
+                        <span class="${t.usesAir && air <= 50 ? 'text-red-500 animate-pulse' : (air <= 100 ? 'text-amber-500' : 'text-emerald-400')}">${airDisp}</span>
                     </div>
                     ${t.usesAir ? `<div class="w-full h-[2px] bg-slate-700 rounded-full mt-1"><div style="background-color:${air<=50?'#ef4444':(air<=100?'#f59e0b':'#10b981')}; width:${(air/300)*100}%" class="h-full rounded-full transition-all"></div></div>` : ''}
                 </div>`;
             });
-
             btn.innerHTML = content + (teams.length? '': '<div class="text-[10px] opacity-10 mt-6 text-center w-full">...</div>') + `</div>`;
             return btn;
         }
@@ -263,7 +242,7 @@
             const team = deployedTeams.find(t => t.uid === uid);
             if (team && team.location !== newLoc) {
                 const old = team.location; team.location = newLoc;
-                addLog("移動", `${team.leader} 從 ${old} ➔ ${newLoc}`); renderMap();
+                addLog("移動", `${team.members.join('、')} 從 ${old} ➔ ${newLoc}`); renderMap();
             }
         }
 
@@ -291,7 +270,6 @@
             updateMemberOptions(); 
             const list = document.getElementById('current-teams-list'); 
             const teams = deployedTeams.filter(t => t.location === name);
-            
             list.innerHTML = teams.length === 0 ? '<p class="text-xs text-slate-600 text-center italic py-2">目前無指派人員</p>' : 
                 teams.map(t => {
                     const airVal = calculateAir(t);
@@ -300,18 +278,8 @@
                             <span class="font-bold text-white"><span class="task-tag task-${taskMap[t.task]}">${taskMap[t.task]}</span> ${t.leader}</span>
                             <button onclick="removeTeam('${t.uid}')" class="text-[10px] text-red-400 underline font-bold">撤離人員</button>
                         </div>
-                        <div class="text-[9px] text-slate-500 mb-3 italic">成員: ${t.members.join(', ')}</div>
-                        ${t.usesAir ? `
-                        <div class="flex flex-col gap-2">
-                            <div class="flex justify-between text-[11px] text-slate-400">
-                                <span>更新目前壓力 (重置提醒)</span>
-                                <span id="air-disp-${t.uid}" class="font-mono text-emerald-400 font-bold">${airVal}b</span>
-                            </div>
-                            <input type="range" min="0" max="300" step="5" value="${airVal}" 
-                                oninput="document.getElementById('air-disp-${t.uid}').innerText = this.value + 'b'"
-                                onchange="updateAir('${t.uid}', this.value)" 
-                                class="w-full h-2 accent-blue-500">
-                        </div>` : `<div class="text-[10px] text-slate-500 italic">非耗氣模式 (幕僚/周界)</div>`}
+                        <div class="text-[9px] text-slate-500 mb-3 italic">組員: ${t.members.join('、')}</div>
+                        ${t.usesAir ? `<input type="range" min="0" max="300" step="5" value="${airVal}" onchange="updateAir('${t.uid}', this.value)" class="w-full">` : ''}
                     </div>`}).join('');
         }
 
@@ -328,7 +296,7 @@
             const idx = deployedTeams.findIndex(t => t.uid === uid);
             if (idx !== -1) {
                 const team = deployedTeams[idx];
-                addLog("撤離", `${team.leader} 等 ${team.members.length} 人從 ${team.location} 撤離`);
+                addLog("撤離", `🔙 ${team.members.join('、')} 已從 ${team.location} 安全撤離`);
                 deployedTeams.splice(idx, 1);
                 renderMap(); closeModal();
             }
@@ -337,18 +305,18 @@
         function submitAssignment() {
             const l = document.getElementById('leader-select').value; if (!l) return;
             const ms = [l]; ["member-2-select", "member-3-select"].forEach(id => { if(document.getElementById(id).value) ms.push(document.getElementById(id).value); });
-            const uid = 't_' + Date.now() + '_' + Math.floor(Math.random()*100);
+            const uid = 't_' + Date.now();
             deployedTeams.push({ 
-                uid: uid, leader: l, members: ms, location: selectedSector, task: selectedTask, 
+                uid, leader: l, members: ms, location: selectedSector, task: selectedTask, 
                 usesAir: document.getElementById('air-toggle').checked, 
                 initialAir: parseInt(document.getElementById('new-air-slider').value), 
                 startTime: Date.now(), lastReport: Date.now(), n100: false, n50: false 
             });
-            addLog("指派", `${l} 等 ${ms.length} 人 ➔ ${selectedSector} (${selectedTask})`); closeModal(); renderMap();
+            addLog("指派", `▶️ ${ms.join('、')} ➔ ${selectedSector} (${selectedTask})`); closeModal(); renderMap();
         }
 
         function addLog(action, msg) {
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
             logHistory.push({ time, action, msg: msg });
             const log = document.createElement('div'); log.className = "mb-1 border-b border-white/5 pb-1";
             log.innerHTML = `<span class="text-blue-500">[${time}]</span> <span class="text-slate-300 font-bold">${action}:</span> ${msg}`;
@@ -356,17 +324,16 @@
         }
 
         function exportLogs() {
-            if (!logHistory.length) return;
             let csv = "\uFEFF時間,動作,詳情\n"; 
             logHistory.forEach(r => csv += `"${r.time}","${r.action}","${r.msg}"\n`);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `fire_log_${Date.now()}.csv`; link.click();
+            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+            link.download = `fire_log_${Date.now()}.csv`; link.click();
         }
 
         async function captureScreen() {
             const el = document.getElementById('capture-area');
             const canvas = await html2canvas(el, { backgroundColor: "#020617", scale: 2 });
-            const link = document.createElement("a"); link.href = canvas.toDataURL("image/png"); link.download = `scene_${Date.now()}.png`; link.click();
+            const link = document.createElement("a"); link.href = canvas.toDataURL(); link.download = `scene_${Date.now()}.png`; link.click();
         }
 
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
@@ -377,22 +344,12 @@
                 b.style.opacity = act?"1":"0.3"; b.style.borderColor = act?"white":"rgba(255,255,255,0.1)"; 
             }); 
         }
-        function toggleAirInput() { 
-            const chk = document.getElementById('air-toggle').checked; 
-            document.getElementById('air-input-section').style.opacity = chk?"1":"0.3"; 
-            document.getElementById('air-input-section').style.pointerEvents = chk?"auto":"none"; 
-        }
-        function changeScene(t) { 
-            currentScene = t; 
-            document.querySelectorAll('.scene-btn').forEach(b => b.classList.toggle('border-blue-500', b.innerText.includes(t==='bungalow'?'平房':'多層'))); 
-            document.getElementById('building-ctrls').style.display = t==='bungalow'?'none':'block';
-            renderMap(); 
-        }
+        function toggleAirInput() { const chk = document.getElementById('air-toggle').checked; document.getElementById('air-input-section').style.display = chk?"block":"none"; }
+        function changeScene(t) { currentScene = t; renderMap(); }
         function adjustFloors(d) { floorCount = Math.max(1, Math.min(10, floorCount + d)); document.getElementById('floor-display').innerText = floorCount; renderMap(); }
-        function adjustUnits(d) { unitCount = Math.max(1, Math.min(5, unitCount + d)); document.getElementById('unit-display').innerText = unitCount; renderMap(); }
 
-        setInterval(() => { document.getElementById('current-clock').innerText = new Date().toLocaleTimeString(); renderMap(); }, 1000);
-        window.onload = () => { loadPersonnel(); setTask('滅火攻擊'); changeScene('building'); };
+        setInterval(() => { document.getElementById('current-clock').innerText = new Date().toLocaleTimeString([], {hour12: false}); renderMap(); }, 1000);
+        window.onload = () => { loadPersonnel(); setTask('滅火攻擊'); };
     </script>
 </body>
 </html>
