@@ -183,7 +183,7 @@
                             <input type="range" id="new-air-slider" min="0" max="300" step="10" value="250" oninput="document.getElementById('new-air-val').innerText=this.value+' bar'" class="w-full accent-blue-500">
                         </div>
                     </div>
-                    <button onclick="submitAssignment()" class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-2xl active:scale-95 transition-all text-lg">DEPLOY / 確定部署</button>
+                    <button id="submit-btn" onclick="submitAssignment()" class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-2xl active:scale-95 transition-all text-lg">DEPLOY / 確定部署</button>
                 </div>
             </div>
         </div>
@@ -238,6 +238,7 @@
     <script>
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT3K4j2T7zex1jjPzVPoWzf1HBflnE_nu2tzv9m_3BKJbovxgDAY5W9wea5RdWer8QXqEEDZEitCOGB/pub?output=csv';
         let personnelData = {}, floorCount = 1, basementCount = 0, unitCount = 1, selectedSector = null, selectedTask = '滅火攻擊', deployedTeams = [], logHistory = [];
+        let editingTeamUid = null; // 👈 新增這行：用來追蹤目前正在編輯的小組
         const CONSUMPTION_PER_MIN = 10;
         const taskMap = { '滅火攻擊': '滅', '人命搜救': '搜', '通風排煙': '排', '周界防護': '周', '侷限火勢': '侷', '殘火處理': '殘', '幕僚作業': '幕', 'RIT': 'RIT' };
 
@@ -271,12 +272,17 @@
             const lS = document.getElementById('leader-select');
             const m2S = document.getElementById('member-2-select');
             const m3S = document.getElementById('member-3-select');
-            const m4S = document.getElementById('member-4-select'); // 新增第四人
+            const m4S = document.getElementById('member-4-select'); 
             
             const currentSelectedInModal = [lS.value, m2S.value, m3S.value, m4S.value].filter(v => v !== "");
 
             const globalDeployed = new Set(); 
-            deployedTeams.forEach(t => { t.members.forEach(m => globalDeployed.add(m)); });
+            deployedTeams.forEach(t => { 
+                // 核心邏輯：如果是正在「編輯中」的隊伍，先把他們從已部署名單釋放出來，這樣選單才找得到人
+                if (t.uid !== editingTeamUid) {
+                    t.members.forEach(m => globalDeployed.add(m)); 
+                }
+            });
 
             let pool = unit === "ALL" ? [].concat(...Object.values(personnelData)) : (personnelData[unit] || []);
             const availablePersonnel = pool.filter(name => !globalDeployed.has(name) || currentSelectedInModal.includes(name));
@@ -289,7 +295,6 @@
                 el.value = prevVal;
             };
 
-            // 互斥過濾邏輯更新為 4 人
             render(lS, [m2S.value, m3S.value, m4S.value]);
             render(m2S, [lS.value, m3S.value, m4S.value]);
             render(m3S, [lS.value, m2S.value, m4S.value]);
@@ -346,7 +351,10 @@
                 <div class="bg-slate-950 p-5 rounded-3xl border border-slate-700 shadow-xl space-y-4">
                     <div class="flex justify-between items-center">
                         <span class="font-black text-white text-lg">${t.leader} 小組</span>
-                        <button onclick="removeTeam('${t.uid}')" class="px-5 py-2 bg-red-600 rounded-xl text-xs font-black text-white">撤離</button>
+                        <div class="flex gap-2">
+                            <button onclick="editTeam('${t.uid}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-black text-white">編輯/增減</button>
+                            <button onclick="removeTeam('${t.uid}')" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-black text-white">撤離</button>
+                        </div>
                     </div>
                     <div class="text-[11px] text-slate-500 font-bold italic">隊員：${t.members.join('、')}</div>
                     ${t.usesAir ? `
@@ -363,13 +371,57 @@
                 </div>`
             }).join('');
             
+            // 清空先前的表單狀態
             document.getElementById('leader-select').value = "";
             document.getElementById('member-2-select').value = "";
             document.getElementById('member-3-select').value = "";
-            document.getElementById('member-4-select').value = ""; // 清空第四人
+            document.getElementById('member-4-select').value = ""; 
             
             updateMemberOptions(); 
             document.getElementById('modal').classList.remove('hidden');
+        }
+
+        // 🌟 新增：載入編輯模式
+        function editTeam(uid) {
+            const team = deployedTeams.find(t => t.uid === uid);
+            if (!team) return;
+            editingTeamUid = uid;
+
+            // 判斷原單位 (自動將單位下拉選單切過去)
+            let unit = "ALL";
+            for (let u in personnelData) {
+                if (personnelData[u].includes(team.leader)) { unit = u; break; }
+            }
+            document.getElementById('unit-select').value = unit;
+
+            // 第一次呼叫：釋放該組成員到選項池
+            updateMemberOptions(); 
+
+            // 填入既有成員
+            document.getElementById('leader-select').value = team.members[0] || "";
+            document.getElementById('member-2-select').value = team.members[1] || "";
+            document.getElementById('member-3-select').value = team.members[2] || "";
+            document.getElementById('member-4-select').value = team.members[3] || "";
+            
+            // 第二次呼叫：鎖定選項，避免四個下拉選單選到重複的人
+            updateMemberOptions();
+
+            // 還原任務與氣瓶設定
+            setTask(team.task);
+            document.getElementById('air-toggle').checked = team.usesAir;
+            toggleAirInput();
+            if(team.usesAir) {
+                document.getElementById('new-air-slider').value = team.initialAir;
+                document.getElementById('new-air-val').innerText = team.initialAir + ' bar';
+            }
+
+            // 改變按鈕外觀：橘色代表正在「更新」
+            const btn = document.getElementById('submit-btn');
+            if(btn) {
+                btn.innerText = "UPDATE / 更新小組資訊";
+                btn.classList.replace('bg-blue-600', 'bg-orange-600');
+                btn.scrollIntoView({ behavior: 'smooth' }); // 自動往下滑到表單
+            }
         }
 
         function updateAir(uid, val) {
@@ -391,12 +443,51 @@
             ["member-2-select", "member-3-select", "member-4-select"].forEach(id => { 
                 const v = document.getElementById(id).value; if(v) ms.push(v); 
             });
+
+            const usesAir = document.getElementById('air-toggle').checked;
+            const initAir = parseInt(document.getElementById('new-air-slider').value);
+
+            // 💡 如果是「編輯模式」的更新邏輯
+            if (editingTeamUid) {
+                const team = deployedTeams.find(t => t.uid === editingTeamUid);
+                const oldMembers = team.members.join('、');
+                
+                team.leader = l;
+                team.members = ms;
+                team.task = selectedTask;
+                
+                let airLog = "";
+                // 如果氣瓶狀態被改變了
+                if (team.usesAir !== usesAir) {
+                    team.usesAir = usesAir;
+                    airLog = usesAir ? " (重新啟用氣瓶)" : " (關閉氣瓶監控)";
+                    if (usesAir) {
+                        team.initialAir = initAir;
+                        team.startTime = Date.now();
+                        team.n100 = false; team.n50 = false;
+                    }
+                }
+                
+                // 紀錄變更 (舊名單 ➔ 新名單)
+                addLog("小組更新", `🔄 [${team.location}] 成員變更：${oldMembers} ➔ ${ms.join('、')} (${selectedTask})${airLog}`); 
+                
+                // 恢復為一般新增模式
+                editingTeamUid = null;
+                const btn = document.getElementById('submit-btn');
+                if(btn) {
+                    btn.innerText = "DEPLOY / 確定部署";
+                    btn.classList.replace('bg-orange-600', 'bg-blue-600');
+                }
+                renderMap(); closeModal(); 
+                return;
+            }
             
+            // 以下為原本的新增邏輯
             const uid = 't_' + Date.now();
             deployedTeams.push({ 
                 uid, leader: l, members: ms, location: selectedSector, task: selectedTask, 
-                usesAir: document.getElementById('air-toggle').checked,
-                initialAir: parseInt(document.getElementById('new-air-slider').value), 
+                usesAir: usesAir,
+                initialAir: initAir, 
                 startTime: Date.now(), n100: false, n50: false 
             });
             addLog("戰術指派", `🚀 [${selectedSector}] 指派：${ms.join('、')} (${selectedTask})`); 
@@ -477,7 +568,17 @@
         }
 
         function toggleAirInput() { document.getElementById('air-input-section').style.display = document.getElementById('air-toggle').checked ? 'block' : 'none'; }
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+        function closeModal() { 
+            document.getElementById('modal').classList.add('hidden'); 
+            
+            // 確保關閉視窗時，如果有按了編輯但沒存檔，會安全地重置狀態
+            editingTeamUid = null;
+            const btn = document.getElementById('submit-btn');
+            if(btn && btn.classList.contains('bg-orange-600')) {
+                btn.innerText = "DEPLOY / 確定部署";
+                btn.classList.replace('bg-orange-600', 'bg-blue-600');
+            }
+        }
         
         function adjustFloors(d) { floorCount = Math.max(1, Math.min(10, floorCount + d)); document.getElementById('floor-display').innerText = floorCount; renderMap(); }
         function adjustBasements(d) { basementCount = Math.max(0, Math.min(5, basementCount + d)); document.getElementById('basement-display').innerText = basementCount; renderMap(); }
