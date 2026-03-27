@@ -6,6 +6,8 @@
     <title>火場戰術管制系統 - 實戰版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 引入觸控拖曳支援套件，確保手機瀏覽器可以操作拖曳功能 -->
+    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         @keyframes blink-red { 0%, 100% { border-color: #ef4444; background-color: rgba(239, 68, 68, 0.4); } 50% { border-color: transparent; background-color: transparent; } }
         @keyframes blink-orange { 0%, 100% { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.3); } 50% { border-color: transparent; background-color: transparent; } }
@@ -18,7 +20,7 @@
         .bg-outside { background-color: #064e3b; border-color: #065f46; }
         .grid-layout { display: grid; grid-template-columns: 80px 1fr 80px; gap: 12px; max-width: 650px; margin: 0 auto; }
         select { background-color: #0f172a !important; color: #ffffff !important; font-weight: bold; border: 1px solid #334155; padding: 8px; border-radius: 8px; width: 100%; appearance: none; }
-        .draggable-team { cursor: grab; padding: 4px 6px; border-radius: 6px; width: 100%; background-color: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 4px; }
+        .draggable-team { cursor: grab; padding: 4px 6px; border-radius: 6px; width: 100%; background-color: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 4px; touch-action: none; }
         .task-tag { padding: 1px 4px; border-radius: 3px; color: white; font-weight: 900; font-size: 9px; margin-right: 2px; text-shadow: 0 1px 1px rgba(0,0,0,0.5); }
         .task-滅 { background-color: #ef4444; } .task-搜 { background-color: #f97316; } .task-周 { background-color: #3b82f6; } 
         .task-侷 { background-color: #10b981; } .task-幕 { background-color: #a855f7; } .task-殘 { background-color: #92400e; } .task-排 { background-color: #06b6d4; }
@@ -244,12 +246,14 @@
             selectedSector = name; document.getElementById('target-sector').innerText = name; document.getElementById('modal').classList.remove('hidden');
             updateMemberOptions(); const list = document.getElementById('current-teams-list'); const teams = deployedTeams.filter(t => t.location === name);
             list.innerHTML = teams.length === 0 ? '<p class="text-xs text-slate-600 text-center italic py-2">無人員於此位置</p>' : 
-                teams.map(t => `<div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">` +
+                teams.map(t => {
+                    const realIdx = deployedTeams.indexOf(t);
+                    return `<div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">` +
                     `<div class="flex justify-between items-center mb-1"><span class="font-bold text-white"><span class="task-tag task-${taskMap[t.task]}">${taskMap[t.task]}</span> ${t.leader}</span>` +
-                    `<button onclick="deployedTeams.splice(deployedTeams.indexOf(${JSON.stringify(t)}),1); closeModal(); renderMap();" class="text-[10px] text-red-400 underline">撤離</button></div>` +
+                    `<button onclick="deployedTeams.splice(${realIdx},1); closeModal(); renderMap();" class="text-[10px] text-red-400 underline">撤離</button></div>` +
                     `<div class="text-[9px] text-slate-500 mb-3">成員: ${t.members.join(', ')}</div>` +
                     (t.usesAir ? `<div class="flex flex-col gap-2"><div class="flex justify-between text-[11px] text-slate-400"><span>更新氣量(重置提醒)</span><span class="font-mono text-emerald-400 font-bold">${calculateAir(t)}b</span></div>` +
-                        `<input type="range" min="0" max="300" step="5" value="${calculateAir(t)}" onchange="updateAir(deployedTeams.indexOf(this.dataset.t), this.value)" data-t='${JSON.stringify(t)}' class="w-full h-2 accent-blue-500"></div>` : `<div class="text-[10px] text-slate-500 italic">非耗氣模式</div>`) + `</div>`).join('');
+                        `<input type="range" min="0" max="300" step="5" value="${calculateAir(t)}" onchange="updateAir(${realIdx}, this.value)" class="w-full h-2 accent-blue-500"></div>` : `<div class="text-[10px] text-slate-500 italic">非耗氣模式</div>`) + `</div>`}).join('');
         }
 
         function updateAir(idx, val) { 
