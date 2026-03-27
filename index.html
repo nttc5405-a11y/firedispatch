@@ -326,9 +326,19 @@
                 </div>`
             }).join('');
             
-            updateMemberOptions();
-            document.getElementById('modal').classList.remove('hidden');
-        }
+            // === 👇 新增部分在此 👇 ===
+    // 1. 清空指派介面的選擇（避免帶入上一次選的人）
+    document.getElementById('leader-select').value = "";
+    document.getElementById('member-2-select').value = "";
+    document.getElementById('member-3-select').value = "";
+
+    // 2. 執行過濾邏輯（讓已派遣的人在選單中消失）
+    updateMemberOptions(); 
+
+    // 3. 顯示彈窗
+    document.getElementById('modal').classList.remove('hidden');
+    // === 👆 新增部分結束 👆 ===
+}
 
         function updateAir(uid, val) {
             const team = deployedTeams.find(t => t.uid === uid);
