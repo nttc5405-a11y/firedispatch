@@ -3,28 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>火場戰術管制系統 - 成功分隊 最終修正版</title>
+    <title>火場戰術管制系統 - 實戰最終增強版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
-        /* 呼吸燈動畫 */
+        /* 呼吸燈警示動畫 */
         @keyframes pulse-red {
-            0%, 100% { border-color: #ff0000; box-shadow: 0 0 20px #ff0000; background-color: rgba(239, 68, 68, 0.4); }
-            50% { border-color: #ffffff; box-shadow: 0 0 40px #ff0000; background-color: rgba(239, 68, 68, 0.1); }
+            0%, 100% { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; background-color: rgba(239, 68, 68, 0.4); }
+            50% { border-color: #ffffff; box-shadow: 0 0 30px #ff0000; background-color: rgba(239, 68, 68, 0.1); }
         }
         @keyframes pulse-orange {
             0%, 100% { border-color: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
-            50% { border-color: #ffffff; box-shadow: 0 0 25px #f59e0b; }
+            50% { border-color: #ffffff; box-shadow: 0 0 20px #f59e0b; }
         }
         .warning-red { animation: pulse-red 0.8s infinite; border-width: 4px !important; }
         .warning-orange { animation: pulse-orange 1.5s infinite; border-width: 4px !important; }
 
         body { background-color: #020617; color: #f8fafc; user-select: none; overflow-x: hidden; touch-action: manipulation; }
         
-        /* 下拉選單：極致對比調整 */
+        /* 極致對比選單：解決文字看不清楚的問題 */
         select { 
-            background-color: #0f172a !important; 
+            background-color: #1e293b !important; 
             color: #ffffff !important; 
             border: 2px solid #3b82f6 !important; 
             padding: 12px !important;
@@ -33,23 +33,24 @@
             border-radius: 12px;
             width: 100%;
             display: block;
+            appearance: auto !important; /* 確保在手機上顯示下拉箭頭 */
         }
-        select option { background-color: #0f172a; color: #ffffff; padding: 10px; }
+        select option { background-color: #0f172a; color: #ffffff; }
 
-        .sector-btn { transition: all 0.2s; min-height: 130px; border-radius: 1rem; border-width: 2px; cursor: pointer; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-        .bg-inside { background-color: #1e293b; border-color: #475569; }
+        .sector-btn { transition: all 0.2s; min-height: 120px; border-radius: 1rem; border-width: 2px; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .bg-inside { background-color: #111827; border-color: #374151; }
         .bg-outside { background-color: #064e3b; border-color: #065f46; }
         .bg-rit { background-color: #450a0a; border-color: #991b1b; }
 
-        .draggable-team { cursor: grab; padding: 8px; border-radius: 10px; background-color: rgba(0, 0, 0, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 6px; }
+        .draggable-team { cursor: grab; padding: 6px; border-radius: 8px; background-color: rgba(0, 0, 0, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 4px; }
         .task-tag { padding: 2px 5px; border-radius: 4px; color: white; font-weight: 900; font-size: 10px; margin-right: 4px; }
         
-        /* 任務色彩定義 */
+        /* 任務色彩 */
         .task-滅 { background-color: #ef4444; } .task-搜 { background-color: #f97316; } .task-排 { background-color: #06b6d4; }
         .task-周 { background-color: #3b82f6; } .task-侷 { background-color: #10b981; } .task-殘 { background-color: #92400e; }
         .task-幕 { background-color: #a855f7; } .task-RIT { background-color: #ff0000; border: 1px solid white; }
 
-        .grid-layout { display: grid; grid-template-columns: 100px 1fr 100px; gap: 16px; width: 100%; max-width: 850px; }
+        .grid-layout { display: grid; grid-template-columns: 90px 1fr 90px; gap: 12px; width: 100%; max-width: 800px; }
     </style>
 </head>
 <body class="flex flex-col lg:flex-row h-screen">
@@ -58,10 +59,10 @@
         <div class="mb-4 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-black text-red-500 italic tracking-tighter">TACTICAL COMMAND</h1>
-                <p id="sync-status" class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">● CHENGGONG UNIT DATABASE CONNECTED</p>
+                <p id="sync-status" class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">● 已連線分隊人員資料庫</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="triggerMayday()" class="px-4 py-2 bg-red-600 rounded-xl text-xs font-black shadow-lg">🚨 MAYDAY</button>
+                <button onclick="triggerMayday()" class="px-4 py-2 bg-red-600 rounded-xl text-xs font-black shadow-lg shadow-red-900/50">🚨 MAYDAY</button>
                 <div class="flex bg-slate-800 rounded-xl p-1 border border-slate-700">
                     <button onclick="changeScene('bungalow')" id="btn-bungalow" class="px-3 py-1 text-[10px] font-bold rounded-lg">平房</button>
                     <button onclick="changeScene('building')" id="btn-building" class="px-3 py-1 text-[10px] font-bold bg-blue-600 rounded-lg">多層</button>
@@ -71,15 +72,15 @@
 
         <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700 mb-6 flex gap-8 items-center">
             <div class="flex flex-col">
-                <span class="text-[10px] text-slate-500 font-black uppercase">Floor / 樓層</span>
+                <span class="text-[10px] text-slate-500 font-black uppercase">樓層設定</span>
                 <div class="flex items-center gap-4 mt-1">
-                    <button onclick="adjustFloors(-1)" class="w-10 h-10 bg-slate-800 rounded-full border-2 border-slate-600 text-xl font-black">-</button>
+                    <button onclick="adjustFloors(-1)" class="w-8 h-8 bg-slate-800 rounded-full border border-slate-600 text-lg">-</button>
                     <span id="floor-display" class="font-mono text-2xl font-black text-blue-400">3</span>
-                    <button onclick="adjustFloors(1)" class="w-10 h-10 bg-slate-800 rounded-full border-2 border-slate-600 text-xl font-black">+</button>
+                    <button onclick="adjustFloors(1)" class="w-8 h-8 bg-slate-800 rounded-full border border-slate-600 text-lg">+</button>
                 </div>
             </div>
             <div class="flex-1 flex flex-col border-l border-slate-800 pl-8">
-                <span class="text-[10px] text-red-500 font-black uppercase">RIT 救援組預置區</span>
+                <span class="text-[10px] text-red-500 font-black uppercase">RIT 預置組</span>
                 <div id="pos-rit" class="mt-1"></div>
             </div>
             <div class="flex flex-col border-l border-slate-800 pl-8">
@@ -88,11 +89,11 @@
             </div>
         </div>
 
-        <div id="capture-area" class="flex-1 flex items-center justify-center">
+        <div id="capture-area" class="flex-1 flex items-center justify-center p-2">
             <div class="grid-layout">
                 <div class="col-start-2"><div id="pos-back"></div></div>
                 <div class="row-start-2 flex items-center"><div id="pos-left" class="w-full"></div></div>
-                <div class="row-start-2 col-start-2 p-2 bg-slate-950/30 rounded-3xl border border-slate-800 shadow-inner"><div id="pos-inside"></div></div>
+                <div class="row-start-2 col-start-2 p-2 bg-slate-950/30 rounded-3xl border border-slate-800"><div id="pos-inside"></div></div>
                 <div class="row-start-2 col-start-3 flex items-center"><div id="pos-right" class="w-full"></div></div>
                 <div class="col-start-2 mt-4"><div id="pos-front"></div></div>
             </div>
@@ -101,13 +102,13 @@
 
     <div class="w-full lg:w-96 bg-slate-900 border-l border-slate-800 flex flex-col shadow-2xl">
         <div class="p-4 bg-slate-950 flex justify-between items-center border-b border-slate-800">
-            <h2 class="font-black text-sm tracking-widest text-slate-400 uppercase">📋 Live Incident Log</h2>
-            <span id="team-count" class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-mono font-bold">0</span>
+            <h2 class="font-black text-sm tracking-widest text-slate-400 uppercase">📋 全場實戰紀錄</h2>
+            <span id="team-count" class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-mono">0</span>
         </div>
-        <div id="status-board" class="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-[11px] leading-relaxed bg-slate-950/50"></div>
+        <div id="status-board" class="flex-1 overflow-y-auto p-4 space-y-2 font-mono text-[11px] bg-slate-950/50"></div>
         <div class="p-4 bg-slate-950 border-t border-slate-800 grid grid-cols-2 gap-2">
-            <button onclick="exportLogs()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black border border-slate-700">匯出 CSV</button>
-            <button onclick="captureScreen()" class="py-3 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-black border border-blue-600">戰術板截圖</button>
+            <button onclick="exportLogs()" class="py-3 bg-slate-800 text-white rounded-xl text-xs font-black border border-slate-700">匯出 CSV</button>
+            <button onclick="captureScreen()" class="py-3 bg-blue-700 text-white rounded-xl text-xs font-black border border-blue-600">戰術截圖</button>
         </div>
     </div>
 
@@ -123,27 +124,17 @@
 
                 <div class="pt-6 border-t border-slate-800 space-y-4">
                     <div class="bg-slate-950 p-5 rounded-3xl border border-slate-800 space-y-5">
-                        <div class="space-y-2">
-                            <label class="text-[10px] text-slate-500 font-black uppercase">單位選擇 (Unit)</label>
-                            <select id="unit-select" onchange="updateMemberOptions()"></select>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] text-blue-400 font-black uppercase">⭐ 帶隊官 (Officer)</label>
+                        <div class="space-y-1">
+                            <label class="text-[10px] text-slate-500 font-black">單位與帶隊官選擇</label>
+                            <select id="unit-select" onchange="updateMemberOptions()" class="mb-2"></select>
                             <select id="leader-select" onchange="updateMemberOptions()"></select>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <div class="space-y-2">
-                                <label class="text-[10px] text-slate-500 font-black uppercase">組員 2</label>
-                                <select id="member-2-select" onchange="updateMemberOptions()"></select>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] text-slate-500 font-black uppercase">組員 3</label>
-                                <select id="member-3-select" onchange="updateMemberOptions()"></select>
-                            </div>
+                            <select id="member-2-select" onchange="updateMemberOptions()"></select>
+                            <select id="member-3-select" onchange="updateMemberOptions()"></select>
                         </div>
                         
                         <div class="space-y-2">
-                            <label class="text-[10px] text-slate-500 font-black uppercase text-center block">任務類別 (Task)</label>
                             <div class="grid grid-cols-4 gap-2">
                                 <button onclick="setTask('滅火攻擊')" id="btn-滅" class="task-btn py-3 rounded-xl border-2 border-transparent text-[10px] font-black bg-red-600/20 text-red-100">滅</button>
                                 <button onclick="setTask('人命搜救')" id="btn-搜" class="task-btn py-3 rounded-xl border-2 border-transparent text-[10px] font-black bg-orange-600/20 text-orange-100">搜</button>
@@ -159,19 +150,19 @@
                         </div>
 
                         <div class="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-800">
-                            <span class="text-xs text-slate-300 font-bold italic">啟用氣瓶監控模式</span>
+                            <span class="text-xs text-slate-300 font-bold">需氣瓶監控模式</span>
                             <input type="checkbox" id="air-toggle" checked onchange="toggleAirInput()" class="w-6 h-6 accent-blue-500">
                         </div>
 
                         <div id="air-input-section" class="space-y-3">
                             <div class="flex justify-between font-black text-[10px]">
-                                <span class="text-slate-500">STARTING PRESSURE</span>
+                                <span class="text-slate-500">起始氣量壓力</span>
                                 <span id="new-air-val" class="text-emerald-400 text-sm font-mono">250 bar</span>
                             </div>
                             <input type="range" id="new-air-slider" min="0" max="300" step="10" value="250" oninput="document.getElementById('new-air-val').innerText=this.value+' bar'" class="w-full accent-blue-500">
                         </div>
                     </div>
-                    <button onclick="submitAssignment()" class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-2xl active:scale-95 transition-all text-lg">DEPLOY / 指派部署</button>
+                    <button onclick="submitAssignment()" class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-2xl active:scale-95 transition-all text-lg">DEPLOY / 確認部署</button>
                 </div>
             </div>
         </div>
@@ -204,7 +195,7 @@
 
         function populateUnitSelect() {
             const select = document.getElementById('unit-select');
-            select.innerHTML = `<option value="ALL">-- ALL UNITS / 全部單位 --</option>` + Object.keys(personnelData).map(u => `<option value="${u}">${u}</option>`).join('');
+            select.innerHTML = `<option value="ALL">-- 選擇單位 (全部) --</option>` + Object.keys(personnelData).map(u => `<option value="${u}">${u}</option>`).join('');
             updateMemberOptions();
         }
 
@@ -218,7 +209,7 @@
             const render = (el, cur, others) => {
                 let opts = [...pool]; if (cur && !opts.includes(cur)) opts.push(cur); 
                 opts = opts.filter(n => !others.includes(n));
-                el.innerHTML = `<option value="">(選擇人員 Select Name)</option>` + opts.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
+                el.innerHTML = `<option value="">(人員點擊選擇)</option>` + opts.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
                 el.value = cur;
             };
             render(lS, cL, [c2, c3]); render(m2S, c2, [cL, c3]); render(m3S, c3, [cL, c2]);
@@ -228,8 +219,8 @@
             if (!team.usesAir) return 999;
             const elapsedMins = (Date.now() - team.startTime) / 60000;
             const current = Math.max(0, team.initialAir - Math.floor(elapsedMins * CONSUMPTION_PER_MIN));
-            if (current <= 100 && !team.n100) { addLog("氣量警告", `⚠️ [${team.location}] ${team.members.join('、')} 壓力低於 100b`); team.n100 = true; }
-            if (current <= 50 && !team.n50) { addLog("緊急回撤", `🆘 [${team.location}] ${team.members.join('、')} 氣量剩餘 ${current}b！`); team.n50 = true; }
+            if (current <= 100 && !team.n100) { addLog("氣量警告", `⚠️ [${team.location}] ${team.members.join('、')} 氣壓低於 100b`); team.n100 = true; }
+            if (current <= 50 && !team.n50) { addLog("緊急回撤", `🆘 [${team.location}] ${team.members.join('、')} 氣壓危急(${current}b)!`); team.n50 = true; }
             return current;
         }
 
@@ -246,7 +237,7 @@
             btn.setAttribute('ondragover', 'event.preventDefault()');
             btn.setAttribute('ondrop', `handleDrop(event, '${name}')`);
 
-            let content = `<div class="w-full flex justify-between items-center mb-2"><span class="text-[10px] font-black opacity-50 uppercase">${name}</span></div>`;
+            let content = `<div class="w-full flex justify-between items-center mb-2"><span class="text-[10px] font-black opacity-40 uppercase">${name}</span></div>`;
             teams.forEach(t => {
                 const air = calculateAir(t);
                 content += `<div class="draggable-team" draggable="true" ondragstart="event.dataTransfer.setData('uid', '${t.uid}')">
@@ -256,7 +247,7 @@
                     </div>
                 </div>`;
             });
-            btn.innerHTML = content + (teams.length? '': '<div class="text-[10px] opacity-10 mt-8 text-center w-full italic font-black uppercase">Standby</div>');
+            btn.innerHTML = content + (teams.length? '': '<div class="text-[10px] opacity-10 mt-8 text-center w-full italic uppercase">STANDBY</div>');
             return btn;
         }
 
@@ -266,27 +257,27 @@
             const list = document.getElementById('current-teams-list');
             const teams = deployedTeams.filter(t => t.location === name);
             
-            // 已部署人員回報滑塊回歸
+            // 已部署人員回報滑塊與資訊 (在此修復回歸)
             list.innerHTML = teams.map(t => {
                 const airVal = calculateAir(t);
                 return `
                 <div class="bg-slate-950 p-5 rounded-3xl border border-slate-700 shadow-xl space-y-4">
                     <div class="flex justify-between items-center">
                         <span class="font-black text-white text-lg">${t.leader} 小組</span>
-                        <button onclick="removeTeam('${t.uid}')" class="px-5 py-2 bg-red-600 rounded-xl text-xs font-black text-white shadow-lg">撤離</button>
+                        <button onclick="removeTeam('${t.uid}')" class="px-5 py-2 bg-red-600 rounded-xl text-xs font-black text-white shadow-lg">撤離人員</button>
                     </div>
-                    <div class="text-[11px] text-slate-500 font-bold italic">人員詳列：${t.members.join('、')}</div>
+                    <div class="text-[11px] text-slate-500 font-bold italic">隊員：${t.members.join('、')}</div>
                     ${t.usesAir ? `
                     <div class="space-y-3">
                         <div class="flex justify-between text-[11px] font-black">
-                            <span class="text-blue-400">當前壓力回報</span>
+                            <span class="text-blue-400">當前壓力現場更新</span>
                             <span id="update-air-val-${t.uid}" class="text-emerald-400 font-mono text-lg">${airVal} bar</span>
                         </div>
                         <input type="range" min="0" max="300" step="5" value="${airVal}" 
                                oninput="document.getElementById('update-air-val-${t.uid}').innerText = this.value + ' bar'"
                                onchange="updateAir('${t.uid}', this.value)" 
                                class="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
-                    </div>` : '<div class="text-center py-2 text-slate-600 text-[10px] font-black italic">此小組未啟用氣瓶監控</div>'}
+                    </div>` : '<div class="text-center py-2 text-slate-600 text-[10px] font-black italic">此任務組未啟用氣瓶監控</div>'}
                 </div>`
             }).join('');
             
@@ -298,16 +289,16 @@
             const team = deployedTeams.find(t => t.uid === uid);
             if (team) {
                 team.initialAir = parseInt(val);
-                team.startTime = Date.now();
+                team.startTime = Date.now(); // 重置消耗時間點
                 team.n100 = (val <= 100); team.n50 = (val <= 50);
-                addLog("壓力更新", `📲 ${team.members.join('、')} 回報氣量為 ${val}b`);
+                addLog("壓力更新", `📲 ${team.members.join('、')} 回報氣壓更新為 ${val}b`);
                 renderMap(); closeModal();
             }
         }
 
         function submitAssignment() {
             const l = document.getElementById('leader-select').value; 
-            if (!l) { alert('請選擇帶隊官！'); return; }
+            if (!l) { alert('請先選擇帶隊官！'); return; }
             const ms = [l]; ["member-2-select", "member-3-select"].forEach(id => { const v = document.getElementById(id).value; if(v) ms.push(v); });
             const uid = 't_' + Date.now();
             deployedTeams.push({ 
@@ -316,7 +307,7 @@
                 initialAir: parseInt(document.getElementById('new-air-slider').value), 
                 startTime: Date.now(), n100: false, n50: false 
             });
-            addLog("戰術指派", `🚀 [${selectedSector}] 進入：${ms.join('、')} (${selectedTask})`); 
+            addLog("戰術派遣", `🚀 [${selectedSector}] 指派：${ms.join('、')} (${selectedTask})`); 
             renderMap(); closeModal(); 
         }
 
@@ -324,7 +315,7 @@
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
             logHistory.push({ time, action, msg });
             const logEl = document.createElement('div');
-            logEl.className = "p-3 rounded-2xl bg-slate-800/40 border-l-4 border-blue-500 shadow-sm";
+            logEl.className = "p-3 rounded-2xl bg-slate-800/50 border-l-4 border-blue-600 shadow-sm";
             logEl.innerHTML = `<span class="text-blue-400 font-black text-[10px]">[${time}]</span> <span class="text-white font-black">${action}</span><br><span class="text-slate-400">${msg}</span>`;
             const board = document.getElementById('status-board');
             board.prepend(logEl);
@@ -336,7 +327,7 @@
             const team = deployedTeams.find(t => t.uid === uid);
             if (team && team.location !== newLoc) {
                 const old = team.location; team.location = newLoc;
-                addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]`); 
+                addLog("位置移動", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]`); 
                 renderMap();
             }
         }
@@ -345,7 +336,7 @@
             const idx = deployedTeams.findIndex(t => t.uid === uid);
             if (idx !== -1) {
                 const team = deployedTeams[idx];
-                addLog("安全撤離", `🔙 ${team.members.join('、')} 已從 [${team.location}] 撤離`);
+                addLog("任務撤離", `🔙 ${team.members.join('、')} 已從 [${team.location}] 安全撤離`);
                 deployedTeams.splice(idx, 1);
                 renderMap(); closeModal();
             }
@@ -361,10 +352,10 @@
 
             const inside = document.getElementById('pos-inside');
             if (currentScene === 'bungalow') {
-                inside.className = "grid grid-cols-2 gap-4"; 
+                inside.className = "grid grid-cols-2 gap-3"; 
                 ["後左區域", "後右區域", "前左區域", "前右區域"].forEach(q => inside.appendChild(createBtn(q)));
             } else {
-                inside.style.display = 'grid'; inside.style.gridTemplateColumns = `repeat(1, 1fr)`; inside.style.gap = '10px';
+                inside.style.display = 'grid'; inside.style.gridTemplateColumns = `repeat(1, 1fr)`; inside.style.gap = '8px';
                 for (let f = floorCount; f >= 1; f--) inside.appendChild(createBtn(f + 'F'));
             }
             document.getElementById('team-count').innerText = deployedTeams.length;
@@ -372,7 +363,7 @@
 
         function triggerMayday() {
             document.body.style.backgroundColor = document.body.style.backgroundColor === 'red' ? '#020617' : 'red';
-            addLog("緊急求救", "🚩 MAYDAY! MAYDAY! MAYDAY! 現場全面進入緊急備戰！");
+            addLog("MAYDAY", "🚩 啟動 MAYDAY 求救信號！確認全場人員狀況！");
         }
 
         function setTask(t) { 
@@ -395,11 +386,11 @@
             let csv = "\uFEFF時間,動作,詳情\n";
             logHistory.forEach(r => csv += `"${r.time}","${r.action}","${r.msg}"\n`);
             const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `FireLog_${Date.now()}.csv`; a.click();
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `FireLog.csv`; a.click();
         }
         async function captureScreen() {
             const canvas = await html2canvas(document.body, { backgroundColor: "#020617" });
-            const a = document.createElement("a"); a.href = canvas.toDataURL(); a.download = `FireBoard_${Date.now()}.png`; a.click();
+            const a = document.createElement("a"); a.href = canvas.toDataURL(); a.download = `TacticalBoard.png`; a.click();
         }
 
         setInterval(() => { 
