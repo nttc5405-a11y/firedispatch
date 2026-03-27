@@ -94,31 +94,32 @@
             </div>
         </div>
 
-        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700 mb-6 flex gap-6 items-center flex-wrap">
-            <div class="flex flex-col">
-                <span class="text-[10px] text-slate-500 font-black">地上 (F)</span>
-                <div class="flex items-center gap-2 mt-1">
-                    <button onclick="adjustFloors(-1)" class="w-8 h-8 bg-slate-800 rounded-full border border-slate-600 text-lg">-</button>
-                    <span id="floor-display" class="font-mono text-xl font-black text-blue-400 w-6 text-center">1</span>
-                    <button onclick="adjustFloors(1)" class="w-8 h-8 bg-slate-800 rounded-full border border-slate-600 text-lg">+</button>
+        <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-700 mb-4 flex justify-between items-center shadow-md">
+            <div class="flex gap-2 flex-wrap">
+                <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800">
+                    <span class="text-[10px] text-slate-500 font-black mr-2">地上(F)</span>
+                    <button onclick="adjustFloors(-1)" class="text-slate-400 hover:text-white px-2 font-black">-</button>
+                    <span id="floor-display" class="font-mono text-sm font-black text-blue-400 w-4 text-center">1</span>
+                    <button onclick="adjustFloors(1)" class="text-slate-400 hover:text-white px-2 font-black">+</button>
+                </div>
+                <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800">
+                    <span class="text-[10px] text-slate-500 font-black mr-2">地下(B)</span>
+                    <button onclick="adjustBasements(-1)" class="text-slate-400 hover:text-white px-2 font-black">-</button>
+                    <span id="basement-display" class="font-mono text-sm font-black text-purple-400 w-4 text-center">0</span>
+                    <button onclick="adjustBasements(1)" class="text-slate-400 hover:text-white px-2 font-black">+</button>
+                </div>
+                <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800">
+                    <span class="text-[10px] text-slate-500 font-black mr-2">棟數(U)</span>
+                    <button onclick="adjustUnits(-1)" class="text-slate-400 hover:text-white px-2 font-black">-</button>
+                    <span id="unit-display" class="font-mono text-sm font-black text-emerald-400 w-4 text-center">1</span>
+                    <button onclick="adjustUnits(1)" class="text-slate-400 hover:text-white px-2 font-black">+</button>
                 </div>
             </div>
-            <div class="flex flex-col border-l border-slate-800 pl-4">
-                <span class="text-[10px] text-slate-500 font-black">地下 (B)</span>
-                <div class="flex items-center gap-2 mt-1">
-                    <button onclick="adjustBasements(-1)" class="w-8 h-8 bg-slate-800 rounded-full border border-slate-600 text-lg">-</button>
-                    <span id="basement-display" class="font-mono text-xl font-black text-purple-400 w-6 text-center">0</span>
-                    <button onclick="adjustBasements(1)" class="w-8 h-8 bg-slate-800 rounded-full border border-slate-600 text-lg">+</button>
-                </div>
+            <div id="cloud-sync-status" class="flex items-center gap-2 px-3 border-l border-slate-700 hidden lg:flex">
+                <span class="w-2 h-2 rounded-full bg-slate-500" id="sync-dot"></span>
+                <span class="text-[10px] text-slate-400 font-bold" id="sync-text">尚未啟用同步</span>
             </div>
-            <div class="flex flex-col border-l border-slate-800 pl-4">
-                <span class="text-[10px] text-slate-500 font-black">棟數 (U)</span>
-                <div class="flex items-center gap-2 mt-1">
-                    <button onclick="adjustUnits(-1)" class="w-8 h-8 bg-slate-800 rounded-full border border-slate-600 text-lg">-</button>
-                    <span id="unit-display" class="font-mono text-xl font-black text-emerald-400 w-6 text-center">1</span>
-                    <button onclick="adjustUnits(1)" class="w-8 h-8 bg-slate-800 rounded-full border border-slate-600 text-lg">+</button>
-                </div>
-            </div>
+        </div>
         </div>
 
         <div id="capture-area" class="flex-1 flex items-center justify-center p-2">
@@ -777,5 +778,65 @@
     };
     document.addEventListener('selectstart', e => e.preventDefault());
     </script>
+    // ================= 雲端自動同步邏輯 =================
+        // 🚨 替換成你剛剛在 Google Apps Script 取得的網址
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxXEXwPnOkKJE9rbSL8mZZAYFXHHqKMvrXAlLti2wGD3vbWrdRjLJyudZtQcYbQDMy4Yg/exec'; 
+        
+        // 產生這次案件的專屬分頁名稱 (格式: 火警_月日_時分)
+        const d = new Date();
+        const SESSION_NAME = '火警_' + 
+            String(d.getMonth()+1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '_' + 
+            String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
+        
+        let lastSyncedLogIndex = 0; // 紀錄上次同步到第幾筆日誌
+
+        async function syncToCloud() {
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') return;
+
+            // 只抓取還沒上傳過的新日誌 (必須反轉，因為前端日誌是最新在最上面，傳給試算表要按時間順序)
+            const logsToSync = logHistory.slice(lastSyncedLogIndex);
+            
+            // 如果沒有新動作，就不耗費資源上傳
+            if (logsToSync.length === 0) return; 
+
+            const stats = {
+                total: document.getElementById('stat-total').innerText,
+                standby: document.getElementById('stat-standby').innerText,
+                deployed: document.getElementById('stat-deployed').innerText
+            };
+
+            const payload = {
+                sessionName: SESSION_NAME,
+                logs: logsToSync,
+                stats: stats
+            };
+
+            // UI 亮黃燈提示同步中
+            document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
+            document.getElementById('sync-text').innerText = '雲端同步中...';
+
+            try {
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    // 解決 CORS 問題的關鍵：用 text/plain 發送 JSON
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if(result.status === 'success') {
+                    lastSyncedLogIndex += logsToSync.length; // 更新進度
+                    document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
+                    document.getElementById('sync-text').innerText = `已同步 (分頁: ${SESSION_NAME})`;
+                }
+            } catch (e) {
+                document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-red-500';
+                document.getElementById('sync-text').innerText = '同步失敗，將於下分鐘重試';
+            }
+        }
+
+        // 設定每 60 秒 (60000 毫秒) 自動執行一次同步
+        setInterval(syncToCloud, 60000);
+        // ================= 雲端自動同步邏輯結束 =================
 </body>
 </html>
