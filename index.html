@@ -62,6 +62,9 @@
                 <p id="sync-status" class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">● CHENGGONG FIRE UNIT CONNECTED</p>
             </div>
             <div class="flex gap-2">
+                <button onclick="toggleManual()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center border border-slate-700 shadow-lg">
+                    <span class="text-blue-400 font-bold">？</span>
+                </button>
                 <button onclick="triggerMayday()" class="px-6 py-2 bg-red-600 rounded-xl text-xs font-black shadow-lg">🚨 MAYDAY</button>
                 </div>
         </div>
@@ -185,7 +188,53 @@
             </div>
         </div>
     </div>
+<div id="manual-modal" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden p-4 z-[60]">
+        <div class="bg-slate-900 w-full max-w-2xl rounded-[2.5rem] border border-slate-700 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                <div>
+                    <h3 class="text-xl font-black text-blue-400">📖 系統操作手冊</h3>
+                    <p class="text-[10px] text-slate-500 uppercase">User Manual & Standard Operating Procedure</p>
+                </div>
+                <button onclick="toggleManual()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl">&times;</button>
+            </div>
+            
+            <div class="p-8 overflow-y-auto space-y-6 text-sm leading-relaxed">
+                <section class="space-y-2">
+                    <h4 class="text-white font-black flex items-center gap-2">
+                        <span class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">1</span> 
+                        初步派遣與部署
+                    </h4>
+                    <p class="text-slate-400 pl-8">點擊建築物區域 ➔ 選擇單位與帶隊官 ➔ 挑選任務色塊 ➔ 設定氣瓶壓力 ➔ 點擊 <b>DEPLOY</b>。系統會自動過濾已在場上的人員。</p>
+                </section>
 
+                <section class="space-y-2">
+                    <h4 class="text-white font-black flex items-center gap-2">
+                        <span class="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center text-[10px]">2</span> 
+                        壓力回報與更新
+                    </h4>
+                    <p class="text-slate-400 pl-8">人員無線電回報後，點擊該人員所在區域 ➔ 拉動 <b>「殘氣更新回報」滑塊</b> ➔ 點擊空白處關閉。此操作會重置計時基準並紀錄於日誌。</p>
+                </section>
+
+                <section class="space-y-2">
+                    <h4 class="text-white font-black flex items-center gap-2">
+                        <span class="w-6 h-6 bg-orange-600 rounded-full flex items-center justify-center text-[10px]">3</span> 
+                        位置移動 (拖放)
+                    </h4>
+                    <p class="text-slate-400 pl-8">長按小組名牌 ➔ 直接拖曳至新區域 ➔ 放開。系統會自動記錄位置轉移時間與成員，無需重新指派。</p>
+                </section>
+
+                <section class="space-y-2 border-l-4 border-red-600 pl-4 bg-red-900/10 py-2">
+                    <h4 class="text-red-500 font-black flex items-center gap-2">🚨 緊急撤離與 MAYDAY</h4>
+                    <p class="text-slate-400">當氣量低於 <b>50b</b> 時，區域會發出紅色閃爍。點擊撤離按鈕人員即回歸備勤名單。若發生突發意外，請按右上角 MAYDAY 啟動全螢幕警示。</p>
+                </section>
+
+                <div class="pt-4 text-center">
+                    <button onclick="toggleManual()" class="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold border border-slate-700 transition-colors">我已了解</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script>
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT3K4j2T7zex1jjPzVPoWzf1HBflnE_nu2tzv9m_3BKJbovxgDAY5W9wea5RdWer8QXqEEDZEitCOGB/pub?output=csv';
         let personnelData = {}, floorCount = 1, basementCount = 0, unitCount = 1, selectedSector = null, selectedTask = '滅火攻擊', deployedTeams = [], logHistory = [];
@@ -451,6 +500,11 @@
         }, 1000);
         
         window.onload = () => { loadPersonnel(); setTask('滅火攻擊'); renderMap(); };
+        // 👇 貼上這段開關說明的程式碼 👇
+        function toggleManual() {
+            document.getElementById('manual-modal').classList.toggle('hidden');
+        }
+        // 👆 貼上這段開關說明的程式碼 👆
     </script>
 </body>
 </html>
