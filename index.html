@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>火場人員管制系統03272325</title>
+    <title>火場人員管制系統 - ICS 實戰版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
@@ -33,11 +33,19 @@
             display: block;
             appearance: auto !important;
         }
+        
+        /* 針對單位群組標題的樣式設定 */
+        optgroup {
+            background-color: #0f172a;
+            color: #60a5fa;
+            font-style: normal;
+            font-weight: 900;
+        }
 
         .sector-btn { transition: all 0.2s; min-height: 120px; border-radius: 1rem; border-width: 2px; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .bg-inside { background-color: #111827; border-color: #374151; }
         .bg-outside { background-color: #064e3b; border-color: #065f46; }
-        .bg-rit { background-color: #450a0a; border-color: #991b1b; }
+        .bg-rit { background-color: #450a0a; border-color: #991b1b; border-style: dashed; }
         .bg-basement { background-color: #1f2937; border-color: #4b5563; }
         .bg-staging { background-color: #0f172a; border-color: #3b82f6; border-style: dashed; }
 
@@ -111,11 +119,6 @@
                     <button onclick="adjustUnits(1)" class="w-8 h-8 bg-slate-800 rounded-full border border-slate-600 text-lg">+</button>
                 </div>
             </div>
-            
-            <div class="flex-1 flex flex-col border-l border-slate-800 pl-6">
-                <span class="text-[10px] text-red-500 font-black uppercase">RIT 救援組</span>
-                <div id="pos-rit" class="mt-1"></div>
-            </div>
         </div>
 
         <div id="capture-area" class="flex-1 flex items-center justify-center p-2">
@@ -124,8 +127,9 @@
                 <div class="row-start-2 flex items-center"><div id="pos-left" class="w-full"></div></div>
                 <div class="row-start-2 col-start-2 p-2 bg-slate-950/30 rounded-3xl border border-slate-800 shadow-inner overflow-hidden"><div id="pos-inside"></div></div>
                 <div class="row-start-2 col-start-3 flex items-center"><div id="pos-right" class="w-full"></div></div>
-                <div class="col-start-2 mt-4 row-start-3"><div id="pos-front"></div></div>
                 
+                <div class="col-start-1 row-start-3 mt-4 flex items-end"><div id="pos-rit" class="w-full"></div></div>
+                <div class="col-start-2 mt-4 row-start-3"><div id="pos-front"></div></div>
                 <div class="col-start-3 row-start-3 mt-4 flex items-end"><div id="pos-staging" class="w-full"></div></div>
             </div>
         </div>
@@ -161,8 +165,7 @@
                 </div>
                 <button onclick="closePersonnelList()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl hover:bg-slate-700 transition-colors">&times;</button>
             </div>
-            <div id="personnel-modal-content" class="p-6 overflow-y-auto space-y-4">
-                </div>
+            <div id="personnel-modal-content" class="p-6 overflow-y-auto space-y-4"></div>
         </div>
     </div>
 
@@ -177,11 +180,17 @@
                 <div id="current-teams-list" class="space-y-4"></div>
                 <div class="pt-6 border-t border-slate-800 space-y-4">
                     <div class="bg-slate-950 p-5 rounded-3xl border border-slate-800 space-y-5">
-                        <div class="space-y-2">
+                        
+                        <div class="flex justify-between items-center mb-1">
                             <label class="text-[10px] text-slate-500 font-black">單位與帶隊官</label>
+                            <button onclick="addCustomPersonnel()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-blue-400 px-3 py-1 rounded border border-slate-700 shadow transition-colors">➕ 臨時建置</button>
+                        </div>
+                        
+                        <div class="space-y-2 mt-0">
                             <select id="unit-select" onchange="updateMemberOptions()" class="mb-2"></select>
                             <select id="leader-select" onchange="updateMemberOptions()"></select>
                         </div>
+                        
                         <div class="grid grid-cols-2 gap-3">
                             <select id="member-2-select" onchange="updateMemberOptions()"></select>
                             <select id="member-3-select" onchange="updateMemberOptions()"></select>
@@ -238,9 +247,9 @@
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
                         <span class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">1</span> 
-                        建築設定與人員報到
+                        人員報到與臨時建置
                     </h4>
-                    <p class="text-slate-400 pl-8">設定<b>地上(F)、地下(B)樓層及棟數(U)</b>。點擊左上角的三個<b>統計儀表板</b>可快速查看對應的人員名單。人員到場請先點擊右下角<b class="text-slate-300">「待命區」</b>進行集結與任務預備。</p>
+                    <p class="text-slate-400 pl-8">若現場有未在清冊內的友軍支援，點擊彈窗內的<b class="text-blue-400">「➕ 臨時建置」</b>，輸入單位與姓名即可立刻派兵上陣。新報到人員請統一先配置於右下角的<b class="text-slate-300">「待命區」</b>。</p>
                 </section>
 
                 <section class="space-y-2">
@@ -292,6 +301,32 @@
             populateUnitSelect();
         }
 
+        // 🌟 新增：臨時建置人員功能 🌟
+        function addCustomPersonnel() {
+            const unitInput = prompt("請輸入該員隸屬單位 (例如: 關山大隊、支援人員):", "臨時支援");
+            if (!unitInput) return;
+            const nameInput = prompt("請輸入人員姓名:", "");
+            if (!nameInput) return;
+            
+            const unit = unitInput.trim();
+            const name = nameInput.trim();
+            
+            if (!personnelData[unit]) personnelData[unit] = [];
+            if (!personnelData[unit].includes(name)) {
+                personnelData[unit].push(name);
+                populateUnitSelect(); // 重新整理下拉選單
+                
+                // 自動將單位切換到剛才新增的單位，方便點選
+                document.getElementById('unit-select').value = unit;
+                updateMemberOptions();
+                
+                alert(`已成功將 [${name}] 加入 [${unit}] 名單！`);
+                addLog("系統建置", `📝 手動新增人員: [${unit}] ${name}`);
+            } else {
+                alert("該人員已在名單中！");
+            }
+        }
+
         function populateUnitSelect() {
             const select = document.getElementById('unit-select');
             select.innerHTML = `<option value="ALL">-- 選擇單位 (全部) --</option>` + Object.keys(personnelData).map(u => `<option value="${u}">${u}</option>`).join('');
@@ -314,14 +349,33 @@
                 }
             });
 
-            let pool = unit === "ALL" ? [].concat(...Object.values(personnelData)) : (personnelData[unit] || []);
-            const availablePersonnel = pool.filter(name => !globalDeployed.has(name) || currentSelectedInModal.includes(name));
+            let availablePersonnel = [];
+            if (unit === "ALL") {
+                availablePersonnel = [].concat(...Object.values(personnelData)).filter(name => !globalDeployed.has(name) || currentSelectedInModal.includes(name));
+            } else {
+                availablePersonnel = (personnelData[unit] || []).filter(name => !globalDeployed.has(name) || currentSelectedInModal.includes(name));
+            }
 
             const render = (el, otherSelected) => {
-                let finalOptions = availablePersonnel.filter(n => !otherSelected.includes(n));
+                let html = `<option value="">(點選名單)</option>`;
+                
+                // 🌟 優化選單群組與辨識度 🌟
+                if (unit === "ALL") {
+                    for (let u in personnelData) {
+                        let availableInUnit = personnelData[u].filter(n => availablePersonnel.includes(n) && !otherSelected.includes(n));
+                        if (availableInUnit.length > 0) {
+                            html += `<optgroup label="[${u}]">`;
+                            html += availableInUnit.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
+                            html += `</optgroup>`;
+                        }
+                    }
+                } else {
+                    let finalOptions = availablePersonnel.filter(n => !otherSelected.includes(n));
+                    html += finalOptions.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
+                }
+
                 const prevVal = el.value;
-                el.innerHTML = `<option value="">(點擊選擇人員)</option>` + 
-                    finalOptions.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
+                el.innerHTML = html;
                 el.value = prevVal;
             };
 
@@ -412,6 +466,8 @@
                 setTask('待命集結');
                 document.getElementById('air-toggle').checked = false;
                 toggleAirInput();
+            } else if (name === "RIT救援區") {
+                setTask('RIT');
             } else {
                 setTask('滅火攻擊'); 
             }
@@ -545,6 +601,9 @@
                     team.task = "待命集結";
                     team.usesAir = false;
                     addLog("安全撤出", `🔙 ${team.members.join('、')} 從 [${old}] 撤出至 [待命區] (氣瓶監控解除)`);
+                } else if (newLoc === "RIT救援區") {
+                    team.task = "RIT";
+                    addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]`); 
                 } else {
                     addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]`); 
                 }
@@ -614,7 +673,6 @@
             if(document.getElementById('stat-deployed')) document.getElementById('stat-deployed').innerText = deployedCount;
         }
 
-        // 👇 新增：顯示統計人員名單的函式 👇
         function showPersonnelList(type) {
             const modal = document.getElementById('personnel-modal');
             const title = document.getElementById('personnel-modal-title');
@@ -641,7 +699,7 @@
                 content.innerHTML = filteredTeams.map(t => {
                     const isStandby = t.location === '待命區';
                     return `
-                    <div class="bg-slate-800 p-4 rounded-2xl border ${isStandby ? 'border-emerald-500/30' : 'border-red-500/30'} shadow-lg">
+                    <div class="bg-slate-800 p-4 rounded-2xl border ${isStandby ? 'border-emerald-500/30' : 'border-red-500/30'} shadow-lg mb-3">
                         <div class="flex justify-between items-center mb-2">
                             <span class="font-black text-white text-lg">${t.leader} 小組</span>
                             <span class="text-xs px-2 py-1 rounded bg-slate-900 font-bold ${isStandby ? 'text-emerald-400' : 'text-red-400'}">📍 ${t.location}</span>
@@ -655,10 +713,7 @@
             modal.classList.remove('hidden');
         }
 
-        function closePersonnelList() {
-            document.getElementById('personnel-modal').classList.add('hidden');
-        }
-        // 👆 新增結束 👆
+        function closePersonnelList() { document.getElementById('personnel-modal').classList.add('hidden'); }
 
         function triggerMayday() {
             document.body.style.backgroundColor = document.body.style.backgroundColor === 'red' ? '#020617' : 'red';
@@ -706,7 +761,7 @@
             renderMap(); 
         }, 1000);
         
-        window.onload = () => { loadPersonnel(); setTask('滅火攻擊'); renderMap(); };
+        window.onload = () => { loadPersonnel(); setTask('待命集結'); renderMap(); };
 
         function toggleManual() {
             document.getElementById('manual-modal').classList.toggle('hidden');
