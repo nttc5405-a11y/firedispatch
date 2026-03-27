@@ -195,45 +195,57 @@
                     <h3 class="text-xl font-black text-blue-400">📖 系統操作手冊</h3>
                     <p class="text-[10px] text-slate-500 uppercase">User Manual & Standard Operating Procedure</p>
                 </div>
-                <button onclick="toggleManual()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl">&times;</button>
+                <button onclick="toggleManual()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl hover:bg-slate-700 transition-colors">&times;</button>
             </div>
             
             <div class="p-8 overflow-y-auto space-y-6 text-sm leading-relaxed">
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
                         <span class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">1</span> 
-                        初步派遣與部署
+                        建築設定與人員部署
                     </h4>
-                    <p class="text-slate-400 pl-8">點擊建築物區域 ➔ 選擇單位與帶隊官 ➔ 挑選任務色塊 ➔ 設定氣瓶壓力 ➔ 點擊 <b>DEPLOY</b>。系統會自動過濾已在場上的人員。</p>
+                    <p class="text-slate-400 pl-8">利用上方控制列設定<b>地上(F)、地下(B)樓層及棟數(U)</b>。點擊建築區域 ➔ 選擇帶隊官與組員(最多4人) ➔ 挑選任務色塊 ➔ 設定氣瓶壓力 ➔ 點擊 <b class="text-white">DEPLOY</b> 進行部署。</p>
                 </section>
 
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
                         <span class="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center text-[10px]">2</span> 
-                        壓力回報與更新
+                        氣壓回報與動態編輯
                     </h4>
-                    <p class="text-slate-400 pl-8">人員無線電回報後，點擊該人員所在區域 ➔ 拉動 <b>「殘氣更新回報」滑塊</b> ➔ 點擊空白處關閉。此操作會重置計時基準並紀錄於日誌。</p>
+                    <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
+                        <li><b>殘氣回報：</b>點擊分區 ➔ 拉動該組的<b>「殘氣更新滑塊」</b>，系統將自動重置消耗計時。</li>
+                        <li><b>增減人員：</b>點擊分區內該小組的 <b class="text-blue-400">編輯/增減</b> 按鈕，即可臨時加入/移除隊員、更改任務或啟閉氣瓶監控，並自動留下變更紀錄。</li>
+                    </ul>
                 </section>
 
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
                         <span class="w-6 h-6 bg-orange-600 rounded-full flex items-center justify-center text-[10px]">3</span> 
-                        位置移動 (拖放)
+                        位置轉移與安全撤離
                     </h4>
-                    <p class="text-slate-400 pl-8">長按小組名牌 ➔ 直接拖曳至新區域 ➔ 放開。系統會自動記錄位置轉移時間與成員，無需重新指派。</p>
+                    <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
+                        <li><b>位置移動：</b>長按小組名牌 ➔ 直接<b>拖曳 (Drag & Drop)</b> 至新區域 ➔ 放開。</li>
+                        <li><b>人員撤離：</b>點擊分區 ➔ 點選紅色的 <b class="text-red-400">撤離</b> 按鈕，人員即回歸待命選單。</li>
+                    </ul>
                 </section>
 
-                <section class="space-y-2 border-l-4 border-red-600 pl-4 bg-red-900/10 py-2">
-                    <h4 class="text-red-500 font-black flex items-center gap-2">🚨 緊急撤離與 MAYDAY</h4>
-                    <p class="text-slate-400">當氣量低於 <b>50b</b> 時，區域會發出紅色閃爍。點擊撤離按鈕人員即回歸備勤名單。若發生突發意外，請按右上角 MAYDAY 啟動全螢幕警示。</p>
+                <section class="space-y-2 border-l-4 border-red-600 pl-4 bg-red-900/10 py-3 rounded-r-lg">
+                    <h4 class="text-red-500 font-black flex items-center gap-2">🚨 緊急狀態與日誌匯出</h4>
+                    <p class="text-slate-400">當氣量低於 <b>50b</b>，區域將發出紅色高頻閃爍；遇突發狀況請按右上角 <b class="text-red-500">MAYDAY</b>。右側日誌在手機版可點擊標題<b>摺疊/展開</b>以節省空間，結束後請點擊「匯出 CSV」保存完整火調時序紀錄。</p>
                 </section>
 
                 <div class="pt-4 text-center">
-                    <button onclick="toggleManual()" class="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold border border-slate-700 transition-colors">我已了解</button>
+                    <button onclick="toggleManual()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black border border-blue-500 shadow-lg active:scale-95 transition-all">我已充分了解</button>
                 </div>
             </div>
         </div>
     </div>
+    ```
+
+### 這次說明書的亮點：
+1. **條理分明**：把「氣瓶回報」與新加的「編輯/增減」功能合併在同一區塊，讓指揮官清楚知道所有與「更新狀態」有關的操作都在彈窗內進行。
+2. **手機版提示**：特別加上了「手機版可點擊標題摺疊」的提示，讓第一次用手機或平板操作的幕僚知道可以收起日誌來換取更大的戰術板空間。
+3. **排版優化**：利用了 `list-disc` (項目符號) 來拆分功能說明，在火場的緊張環境中，條列式的閱讀速度會比一整段文字快很多。
     
     <script>
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT3K4j2T7zex1jjPzVPoWzf1HBflnE_nu2tzv9m_3BKJbovxgDAY5W9wea5RdWer8QXqEEDZEitCOGB/pub?output=csv';
