@@ -39,7 +39,6 @@
         .bg-outside { background-color: #064e3b; border-color: #065f46; }
         .bg-rit { background-color: #450a0a; border-color: #991b1b; }
         .bg-basement { background-color: #1f2937; border-color: #4b5563; }
-        /* 新增：待命區專屬樣式 */
         .bg-staging { background-color: #0f172a; border-color: #3b82f6; border-style: dashed; }
 
         .draggable-team { cursor: grab; padding: 6px; border-radius: 8px; background-color: rgba(0, 0, 0, 0.85); border: 1px solid rgba(255, 255, 255, 0.3); margin-bottom: 4px; }
@@ -48,7 +47,6 @@
         .task-btn { transition: all 0.2s; opacity: 0.4; border-width: 2px; border-color: transparent; }
         .task-btn.active { opacity: 1 !important; border-color: white !important; transform: scale(1.05); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
 
-        /* 任務色彩，新增「待命」 */
         .task-滅 { background-color: #ef4444; } .task-搜 { background-color: #f97316; } .task-排 { background-color: #06b6d4; }
         .task-周 { background-color: #3b82f6; } .task-侷 { background-color: #10b981; } .task-殘 { background-color: #92400e; }
         .task-幕 { background-color: #a855f7; } .task-RIT { background-color: #ff0000; border: 1px solid white; }
@@ -66,20 +64,19 @@
                 <p id="sync-status" class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-2">● CHENGGONG FIRE UNIT CONNECTED</p>
                 
                 <div class="flex gap-2 mt-1 flex-wrap">
-                    <div class="bg-slate-900 border border-blue-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
+                    <div onclick="showPersonnelList('total')" class="cursor-pointer hover:bg-slate-800 active:scale-95 transition-all bg-slate-900 border border-blue-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
                         <span class="w-2 h-2 rounded-full bg-blue-500"></span>
                         <span class="text-[10px] text-slate-400 font-black tracking-widest">現場總數 <span id="stat-total" class="text-blue-400 font-mono text-base ml-1">0</span></span>
                     </div>
-                    <div class="bg-slate-900 border border-emerald-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
+                    <div onclick="showPersonnelList('standby')" class="cursor-pointer hover:bg-slate-800 active:scale-95 transition-all bg-slate-900 border border-emerald-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         <span class="text-[10px] text-slate-400 font-black tracking-widest">集結待命 <span id="stat-standby" class="text-emerald-400 font-mono text-base ml-1">0</span></span>
                     </div>
-                    <div class="bg-slate-900 border border-red-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
+                    <div onclick="showPersonnelList('deployed')" class="cursor-pointer hover:bg-slate-800 active:scale-95 transition-all bg-slate-900 border border-red-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
                         <span class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"></span>
                         <span class="text-[10px] text-slate-400 font-black tracking-widest">熱區部署 <span id="stat-deployed" class="text-red-400 font-mono text-base ml-1">0</span></span>
                     </div>
                 </div>
-
             </div>
             <div class="flex gap-2">
                 <button onclick="toggleManual()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center border border-slate-700 shadow-lg">
@@ -155,6 +152,20 @@
         </details>
     </div>
 
+    <div id="personnel-modal" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden p-4 z-[70]">
+        <div class="bg-slate-900 w-full max-w-md rounded-[2.5rem] border border-slate-700 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                <div>
+                    <h3 id="personnel-modal-title" class="text-xl font-black text-white">名單</h3>
+                    <p class="text-[10px] text-slate-500 uppercase">Personnel List</p>
+                </div>
+                <button onclick="closePersonnelList()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl hover:bg-slate-700 transition-colors">&times;</button>
+            </div>
+            <div id="personnel-modal-content" class="p-6 overflow-y-auto space-y-4">
+                </div>
+        </div>
+    </div>
+
     <div id="modal" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden p-4 z-50">
         <div class="bg-slate-900 w-full max-w-md rounded-[2.5rem] border border-slate-700 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
             <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
@@ -201,7 +212,10 @@
                                 <span class="text-slate-500 uppercase">START PRESSURE</span>
                                 <span id="new-air-val" class="text-emerald-400 text-sm font-mono">250 bar</span>
                             </div>
-                            <input type="range" id="new-air-slider" min="0" max="300" step="10" value="250" oninput="document.getElementById('new-air-val').innerText=this.value+' bar'" class="w-full accent-blue-500">
+                            <input type="range" id="new-air-slider" min="0" max="300" step="10" value="250" 
+                                   ontouchstart="event.stopPropagation()" onmousedown="event.stopPropagation()"
+                                   oninput="document.getElementById('new-air-val').innerText=this.value+' bar'" 
+                                   class="w-full accent-blue-500">
                         </div>
                     </div>
                     <button id="submit-btn" onclick="submitAssignment()" class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-2xl active:scale-95 transition-all text-lg">DEPLOY / 確定部署</button>
@@ -226,7 +240,7 @@
                         <span class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">1</span> 
                         建築設定與人員報到
                     </h4>
-                    <p class="text-slate-400 pl-8">設定<b>地上(F)、地下(B)樓層及棟數(U)</b>。人員到場請先點擊右下角<b class="text-slate-300">「待命區」</b>進行集結與任務預備。</p>
+                    <p class="text-slate-400 pl-8">設定<b>地上(F)、地下(B)樓層及棟數(U)</b>。點擊左上角的三個<b>統計儀表板</b>可快速查看對應的人員名單。人員到場請先點擊右下角<b class="text-slate-300">「待命區」</b>進行集結與任務預備。</p>
                 </section>
 
                 <section class="space-y-2">
@@ -235,14 +249,14 @@
                         氣壓回報與動態編輯
                     </h4>
                     <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
-                        <li><b>殘氣回報：</b>點擊分區 ➔ 拉動該組的<b>「殘氣更新滑塊」</b>，系統將自動重置消耗計時。</li>
+                        <li><b>殘氣回報：</b>點擊分區 ➔ 拉動該組的<b>「殘氣更新滑塊」</b>，系統將自動重置消耗計時。氣壓每分鐘扣除10bar (每6秒扣1bar)。</li>
                         <li><b>增減人員：</b>點擊分區內該小組的 <b class="text-blue-400">編輯/增減</b> 按鈕，即可臨時加入/移除隊員或更改狀態。</li>
                     </ul>
                 </section>
 
                 <section class="space-y-2 border-l-4 border-emerald-500 pl-4 bg-emerald-900/10 py-3 rounded-r-lg">
                     <h4 class="text-emerald-400 font-black flex items-center gap-2">🔄 拖曳撤出 (Drag & Drop)</h4>
-                    <p class="text-slate-400">當人員退出熱區時，請直接長按小組名牌<b>拖曳至右下角「待命區」</b>。系統會自動將該組任務改為「待」，並<b>自動解除氣瓶監控</b>，確保符合現場管制邏輯。若需完全收隊，請點擊彈窗內的紅色「撤離」按鈕。</p>
+                    <p class="text-slate-400">當人員退出熱區時，請直接長按小組名牌<b>拖曳至右下角「待命區」</b>。系統會自動將該組任務改為「待」，並<b>自動解除氣瓶監控</b>。若需完全收隊，請點擊彈窗內的紅色「撤離」按鈕。</p>
                 </section>
 
                 <div class="pt-4 text-center">
@@ -332,7 +346,6 @@
             let air100 = teams.some(t => t.usesAir && calculateAir(t) <= 100);
             let statusClass = air50 ? 'warning-red' : (air100 ? 'warning-orange' : 'border-slate-800');
             
-            // 💡 判斷背景顏色 (新增待命區專屬色)
             let bgColor = isInside ? (name.includes('B') ? 'bg-basement' : 'bg-inside') : 
                           (name === "RIT救援區" ? 'bg-rit' : 
                           (name === "待命區" ? 'bg-staging' : 'bg-outside'));
@@ -382,6 +395,7 @@
                             <span id="update-air-val-${t.uid}" class="text-emerald-400 font-mono text-lg">${airVal} bar</span>
                         </div>
                         <input type="range" min="0" max="300" step="5" value="${airVal}" 
+                               ontouchstart="event.stopPropagation()" onmousedown="event.stopPropagation()"
                                oninput="document.getElementById('update-air-val-${t.uid}').innerText = this.value + ' bar'"
                                onchange="updateAir('${t.uid}', this.value)" 
                                class="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
@@ -394,13 +408,12 @@
             document.getElementById('member-3-select').value = "";
             document.getElementById('member-4-select').value = ""; 
             
-            // 💡 如果點開的是待命區，自動幫他選好「待命集結」並關閉氣瓶
             if (name === "待命區") {
                 setTask('待命集結');
                 document.getElementById('air-toggle').checked = false;
                 toggleAirInput();
             } else {
-                setTask('滅火攻擊'); // 預設
+                setTask('滅火攻擊'); 
             }
 
             updateMemberOptions(); 
@@ -484,7 +497,6 @@
                         team.n100 = false; team.n50 = false;
                     }
                 } else if (usesAir) {
-                    // 如果氣瓶一直開著，編輯時也順便更新起始氣量
                     team.initialAir = initAir;
                     team.startTime = Date.now();
                 }
@@ -521,7 +533,6 @@
             document.getElementById('status-board').prepend(logEl);
         }
 
-        // 🌟 核心：拖曳撤出至待命區的自動化邏輯 🌟
         function handleDrop(e, newLoc) {
             e.preventDefault();
             const uid = e.dataTransfer.getData('uid');
@@ -530,7 +541,6 @@
                 const old = team.location; 
                 team.location = newLoc;
 
-                // 如果拖曳到「待命區」，自動切換任務為「待命」並解除氣瓶
                 if (newLoc === "待命區") {
                     team.task = "待命集結";
                     team.usesAir = false;
@@ -563,7 +573,6 @@
             document.getElementById('pos-right').appendChild(createBtn("第四面(右)", false));
             document.getElementById('pos-rit').appendChild(createBtn("RIT救援區", false));
             
-            // 🌟 繪製右下角的待命區 🌟
             if(document.getElementById('pos-staging')) {
                 document.getElementById('pos-staging').appendChild(createBtn("待命區", false));
             }
@@ -586,7 +595,6 @@
                 }
             }
 
-            // 🌟 統計人數精準計算 (總數 / 待命 / 部署) 🌟
             let totalOnScene = 0;
             let standbyCount = 0;
             let deployedCount = 0;
@@ -605,6 +613,52 @@
             if(document.getElementById('stat-standby')) document.getElementById('stat-standby').innerText = standbyCount;
             if(document.getElementById('stat-deployed')) document.getElementById('stat-deployed').innerText = deployedCount;
         }
+
+        // 👇 新增：顯示統計人員名單的函式 👇
+        function showPersonnelList(type) {
+            const modal = document.getElementById('personnel-modal');
+            const title = document.getElementById('personnel-modal-title');
+            const content = document.getElementById('personnel-modal-content');
+            
+            let filteredTeams = [];
+            if (type === 'total') {
+                title.innerText = "現場總人數名單";
+                title.className = "text-xl font-black text-blue-400";
+                filteredTeams = deployedTeams;
+            } else if (type === 'standby') {
+                title.innerText = "集結待命名單";
+                title.className = "text-xl font-black text-emerald-400";
+                filteredTeams = deployedTeams.filter(t => t.location === '待命區');
+            } else if (type === 'deployed') {
+                title.innerText = "熱區部署名單";
+                title.className = "text-xl font-black text-red-400";
+                filteredTeams = deployedTeams.filter(t => t.location !== '待命區');
+            }
+
+            if (filteredTeams.length === 0) {
+                content.innerHTML = '<p class="text-center text-slate-500 font-bold py-8">目前無人員紀錄</p>';
+            } else {
+                content.innerHTML = filteredTeams.map(t => {
+                    const isStandby = t.location === '待命區';
+                    return `
+                    <div class="bg-slate-800 p-4 rounded-2xl border ${isStandby ? 'border-emerald-500/30' : 'border-red-500/30'} shadow-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-black text-white text-lg">${t.leader} 小組</span>
+                            <span class="text-xs px-2 py-1 rounded bg-slate-900 font-bold ${isStandby ? 'text-emerald-400' : 'text-red-400'}">📍 ${t.location}</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 font-bold mb-1">任務：<span class="text-white">${t.task}</span></div>
+                        <div class="text-[11px] text-slate-400 font-bold">隊員：<span class="text-slate-200">${t.members.join('、')}</span></div>
+                    </div>`;
+                }).join('');
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closePersonnelList() {
+            document.getElementById('personnel-modal').classList.add('hidden');
+        }
+        // 👆 新增結束 👆
 
         function triggerMayday() {
             document.body.style.backgroundColor = document.body.style.backgroundColor === 'red' ? '#020617' : 'red';
@@ -659,18 +713,13 @@
         }
     </script>
     <script>
-    // 禁用右鍵選單
     document.addEventListener('contextmenu', event => event.preventDefault());
-
-    // 禁用常見的開發者工具快捷鍵與選取功能
     document.onkeydown = function(e) {
         if (e.keyCode === 123) return false;
         if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) return false;
         if (e.ctrlKey && e.keyCode === 85) return false;
         if (e.ctrlKey && e.keyCode === 83) return false;
     };
-    
-    // 禁用文字選取與複製
     document.addEventListener('selectstart', e => e.preventDefault());
     </script>
 </body>
