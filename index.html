@@ -788,10 +788,10 @@
             String(d.getMonth()+1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '_' + 
             String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
         
-        let lastSyncedLogIndex = 0; // 紀錄上次同步到第幾筆日誌
+        let lastSyncedLogIndex = 0; #// 紀錄上次同步到第幾筆日誌
 
         async function syncToCloud() {
-            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') return;
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxXEXwPnOkKJE9rbSL8mZZAYFXHHqKMvrXAlLti2wGD3vbWrdRjLJyudZtQcYbQDMy4Yg/exec') return;
 
             // 只抓取還沒上傳過的新日誌 (必須反轉，因為前端日誌是最新在最上面，傳給試算表要按時間順序)
             const logsToSync = logHistory.slice(lastSyncedLogIndex);
@@ -811,7 +811,7 @@
                 stats: stats
             };
 
-            // UI 亮黃燈提示同步中
+            #// UI 亮黃燈提示同步中
             document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
             document.getElementById('sync-text').innerText = '雲端同步中...';
 
