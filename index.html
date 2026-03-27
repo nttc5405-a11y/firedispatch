@@ -218,20 +218,48 @@
         }
 
         function updateMemberOptions() {
-            const unit = document.getElementById('unit-select').value;
-            const lS = document.getElementById('leader-select'), m2S = document.getElementById('member-2-select'), m3S = document.getElementById('member-3-select');
-            const cL = lS.value, c2 = m2S.value, c3 = m3S.value;
-            const globalDeployed = new Set(); 
-            deployedTeams.forEach(t => t.members.forEach(m => globalDeployed.add(m)));
-            let pool = (unit === "ALL" ? [].concat(...Object.values(personnelData)) : personnelData[unit] || []).filter(n => !globalDeployed.has(n));
-            const render = (el, cur, others) => {
-                let opts = [...pool]; if (cur && !opts.includes(cur)) opts.push(cur); 
-                opts = opts.filter(n => !others.includes(n));
-                el.innerHTML = `<option value="">(人員點擊選擇)</option>` + opts.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
-                el.value = cur;
-            };
-            render(lS, cL, [c2, c3]); render(m2S, c2, [cL, c3]); render(m3S, c3, [cL, c2]);
-        }
+    const unit = document.getElementById('unit-select').value;
+    const lS = document.getElementById('leader-select');
+    const m2S = document.getElementById('member-2-select');
+    const m3S = document.getElementById('member-3-select');
+    
+    // 取得目前選單中已經選中的人（避免自己過濾掉自己）
+    const currentSelectedInModal = [lS.value, m2S.value, m3S.value].filter(v => v !== "");
+
+    // 1. 建立「全場已部署人員」清單 (排除掉目前正在編輯的這組人)
+    const globalDeployed = new Set(); 
+    deployedTeams.forEach(t => {
+        t.members.forEach(m => globalDeployed.add(m));
+    });
+
+    // 2. 從原始資料中篩選：(屬於該單位) 且 (不在已部署清單中)
+    let pool = [];
+    if (unit === "ALL") {
+        pool = [].concat(...Object.values(personnelData));
+    } else {
+        pool = personnelData[unit] || [];
+    }
+
+    // 過濾掉已經在場上的人（但如果該人已經出現在目前的下拉選單中，要保留，否則選單會變空白）
+    const availablePersonnel = pool.filter(name => !globalDeployed.has(name) || currentSelectedInModal.includes(name));
+
+    // 3. 渲染選單的輔助函式
+    const render = (el, currentVal, otherSelected) => {
+        // 選項 = (可用人員) 減去 (本組其他位置已選的人)
+        let finalOptions = availablePersonnel.filter(n => !otherSelected.includes(n));
+        
+        // 保持目前的選中值不變
+        const prevVal = el.value;
+        el.innerHTML = `<option value="">(點擊選擇人員)</option>` + 
+            finalOptions.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
+        el.value = prevVal;
+    };
+
+    // 執行渲染：每個位置都要排除掉另外兩個位置已選的人
+    render(lS, lS.value, [m2S.value, m3S.value]);
+    render(m2S, m2S.value, [lS.value, m3S.value]);
+    render(m3S, m3S.value, [lS.value, m2S.value]);
+}
 
         function calculateAir(team) {
             if (!team.usesAir) return 999;
