@@ -778,11 +778,11 @@
     };
     document.addEventListener('selectstart', e => e.preventDefault());
     </script>
-    // ================= 雲端自動同步邏輯 =================
-        // 🚨 替換成你剛剛在 Google Apps Script 取得的網址
+   # // ================= 雲端自動同步邏輯 =================
+    #    // 🚨 替換成你剛剛在 Google Apps Script 取得的網址
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxXEXwPnOkKJE9rbSL8mZZAYFXHHqKMvrXAlLti2wGD3vbWrdRjLJyudZtQcYbQDMy4Yg/exec'; 
         
-        // 產生這次案件的專屬分頁名稱 (格式: 火警_月日_時分)
+    #    // 產生這次案件的專屬分頁名稱 (格式: 火警_月日_時分)
         const d = new Date();
         const SESSION_NAME = '火警_' + 
             String(d.getMonth()+1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '_' + 
@@ -793,10 +793,10 @@
         async function syncToCloud() {
             if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxXEXwPnOkKJE9rbSL8mZZAYFXHHqKMvrXAlLti2wGD3vbWrdRjLJyudZtQcYbQDMy4Yg/exec') return;
 
-            // 只抓取還沒上傳過的新日誌 (必須反轉，因為前端日誌是最新在最上面，傳給試算表要按時間順序)
+         #   // 只抓取還沒上傳過的新日誌 (必須反轉，因為前端日誌是最新在最上面，傳給試算表要按時間順序)
             const logsToSync = logHistory.slice(lastSyncedLogIndex);
             
-            // 如果沒有新動作，就不耗費資源上傳
+        #    // 如果沒有新動作，就不耗費資源上傳
             if (logsToSync.length === 0) return; 
 
             const stats = {
@@ -818,14 +818,14 @@
             try {
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    // 解決 CORS 問題的關鍵：用 text/plain 發送 JSON
+             #       // 解決 CORS 問題的關鍵：用 text/plain 發送 JSON
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
 
                 if(result.status === 'success') {
-                    lastSyncedLogIndex += logsToSync.length; // 更新進度
+                    lastSyncedLogIndex += logsToSync.length; #// 更新進度
                     document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
                     document.getElementById('sync-text').innerText = `已同步 (分頁: ${SESSION_NAME})`;
                 }
@@ -835,8 +835,8 @@
             }
         }
 
-        // 設定每 60 秒 (60000 毫秒) 自動執行一次同步
+        #// 設定每 60 秒 (60000 毫秒) 自動執行一次同步
         setInterval(syncToCloud, 60000);
-        // ================= 雲端自動同步邏輯結束 =================
+       # // ================= 雲端自動同步邏輯結束 =================
 </body>
 </html>
