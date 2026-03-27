@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>火場人員管制系統</title>
+    <title>火場人員管制系統 - ICS 實戰版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
@@ -39,6 +39,8 @@
         .bg-outside { background-color: #064e3b; border-color: #065f46; }
         .bg-rit { background-color: #450a0a; border-color: #991b1b; }
         .bg-basement { background-color: #1f2937; border-color: #4b5563; }
+        /* 新增：待命區專屬樣式 */
+        .bg-staging { background-color: #0f172a; border-color: #3b82f6; border-style: dashed; }
 
         .draggable-team { cursor: grab; padding: 6px; border-radius: 8px; background-color: rgba(0, 0, 0, 0.85); border: 1px solid rgba(255, 255, 255, 0.3); margin-bottom: 4px; }
         .task-tag { padding: 2px 5px; border-radius: 4px; color: white; font-weight: 900; font-size: 10px; margin-right: 4px; }
@@ -46,9 +48,11 @@
         .task-btn { transition: all 0.2s; opacity: 0.4; border-width: 2px; border-color: transparent; }
         .task-btn.active { opacity: 1 !important; border-color: white !important; transform: scale(1.05); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
 
+        /* 任務色彩，新增「待命」 */
         .task-滅 { background-color: #ef4444; } .task-搜 { background-color: #f97316; } .task-排 { background-color: #06b6d4; }
         .task-周 { background-color: #3b82f6; } .task-侷 { background-color: #10b981; } .task-殘 { background-color: #92400e; }
         .task-幕 { background-color: #a855f7; } .task-RIT { background-color: #ff0000; border: 1px solid white; }
+        .task-待 { background-color: #64748b; border: 1px dashed white; color: #fff; }
 
         .grid-layout { display: grid; grid-template-columns: 90px 1fr 90px; gap: 12px; width: 100%; max-width: 850px; }
     </style>
@@ -61,10 +65,14 @@
                 <h1 class="text-2xl font-black text-red-500 italic tracking-tighter">TACTICAL COMMAND</h1>
                 <p id="sync-status" class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-2">● CHENGGONG FIRE UNIT CONNECTED</p>
                 
-                <div class="flex gap-2 mt-1">
+                <div class="flex gap-2 mt-1 flex-wrap">
+                    <div class="bg-slate-900 border border-blue-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span class="text-[10px] text-slate-400 font-black tracking-widest">現場總數 <span id="stat-total" class="text-blue-400 font-mono text-base ml-1">0</span></span>
+                    </div>
                     <div class="bg-slate-900 border border-emerald-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-[10px] text-slate-400 font-black tracking-widest">待命人數 <span id="stat-standby" class="text-emerald-400 font-mono text-base ml-1">0</span></span>
+                        <span class="text-[10px] text-slate-400 font-black tracking-widest">集結待命 <span id="stat-standby" class="text-emerald-400 font-mono text-base ml-1">0</span></span>
                     </div>
                     <div class="bg-slate-900 border border-red-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
                         <span class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"></span>
@@ -119,7 +127,9 @@
                 <div class="row-start-2 flex items-center"><div id="pos-left" class="w-full"></div></div>
                 <div class="row-start-2 col-start-2 p-2 bg-slate-950/30 rounded-3xl border border-slate-800 shadow-inner overflow-hidden"><div id="pos-inside"></div></div>
                 <div class="row-start-2 col-start-3 flex items-center"><div id="pos-right" class="w-full"></div></div>
-                <div class="col-start-2 mt-4"><div id="pos-front"></div></div>
+                <div class="col-start-2 mt-4 row-start-3"><div id="pos-front"></div></div>
+                
+                <div class="col-start-3 row-start-3 mt-4 flex items-end"><div id="pos-staging" class="w-full"></div></div>
             </div>
         </div>
     </div>
@@ -129,7 +139,7 @@
             <summary class="flex justify-between items-center p-4 bg-slate-950 cursor-pointer list-none border-b border-slate-800 lg:cursor-default">
                 <div class="flex items-center gap-3">
                     <h2 class="font-black text-sm tracking-widest text-slate-400 uppercase">📋 Live Incident Log</h2>
-                    <span id="team-count" class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-mono font-bold">0</span>
+                    <span id="team-count" class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-mono font-bold hidden">0</span>
                 </div>
                 <span class="text-slate-500 transition-transform group-open:rotate-180 lg:hidden">▼</span>
             </summary>
@@ -168,17 +178,16 @@
                         </div>
                         
                         <div class="space-y-2">
-                            <div class="grid grid-cols-4 gap-2">
-                                <button onclick="setTask('滅火攻擊')" id="btn-滅" class="task-btn py-3 rounded-xl text-[10px] font-black bg-red-600 text-red-100">滅</button>
-                                <button onclick="setTask('人命搜救')" id="btn-搜" class="task-btn py-3 rounded-xl text-[10px] font-black bg-orange-600 text-orange-100">搜</button>
-                                <button onclick="setTask('通風排煙')" id="btn-排" class="task-btn py-3 rounded-xl text-[10px] font-black bg-cyan-600 text-cyan-100">排</button>
-                                <button onclick="setTask('周界防護')" id="btn-周" class="task-btn py-3 rounded-xl text-[10px] font-black bg-blue-600 text-blue-100">周</button>
-                            </div>
-                            <div class="grid grid-cols-4 gap-2">
-                                <button onclick="setTask('侷限火勢')" id="btn-侷" class="task-btn py-3 rounded-xl text-[10px] font-black bg-emerald-600 text-emerald-100">侷</button>
-                                <button onclick="setTask('殘火處理')" id="btn-殘" class="task-btn py-3 rounded-xl text-[10px] font-black bg-amber-800 text-amber-100">殘</button>
-                                <button onclick="setTask('幕僚作業')" id="btn-幕" class="task-btn py-3 rounded-xl text-[10px] font-black bg-purple-600 text-purple-100">幕</button>
-                                <button onclick="setTask('RIT')" id="btn-RIT" class="task-btn py-3 rounded-xl text-[10px] font-black bg-red-900 text-red-200">RIT</button>
+                            <div class="flex flex-wrap gap-2 justify-center">
+                                <button onclick="setTask('滅火攻擊')" id="btn-滅" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-red-600 text-red-100">滅</button>
+                                <button onclick="setTask('人命搜救')" id="btn-搜" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-orange-600 text-orange-100">搜</button>
+                                <button onclick="setTask('通風排煙')" id="btn-排" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-cyan-600 text-cyan-100">排</button>
+                                <button onclick="setTask('周界防護')" id="btn-周" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-blue-600 text-blue-100">周</button>
+                                <button onclick="setTask('侷限火勢')" id="btn-侷" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-emerald-600 text-emerald-100">侷</button>
+                                <button onclick="setTask('殘火處理')" id="btn-殘" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-amber-800 text-amber-100">殘</button>
+                                <button onclick="setTask('幕僚作業')" id="btn-幕" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-purple-600 text-purple-100">幕</button>
+                                <button onclick="setTask('RIT')" id="btn-RIT" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-red-900 text-red-200">RIT</button>
+                                <button onclick="setTask('待命集結')" id="btn-待" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-slate-600 text-slate-100">待命</button>
                             </div>
                         </div>
 
@@ -206,7 +215,7 @@
             <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
                 <div>
                     <h3 class="text-xl font-black text-blue-400">📖 系統操作手冊</h3>
-                    <p class="text-[10px] text-slate-500 uppercase">User Manual & Standard Operating Procedure</p>
+                    <p class="text-[10px] text-slate-500 uppercase">User Manual & SOP</p>
                 </div>
                 <button onclick="toggleManual()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl hover:bg-slate-700 transition-colors">&times;</button>
             </div>
@@ -215,9 +224,9 @@
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
                         <span class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">1</span> 
-                        建築設定與人員部署
+                        建築設定與人員報到
                     </h4>
-                    <p class="text-slate-400 pl-8">利用上方控制列設定<b>地上(F)、地下(B)樓層及棟數(U)</b>。點擊建築區域 ➔ 選擇帶隊官與組員(最多4人) ➔ 挑選任務色塊 ➔ 設定氣瓶壓力 ➔ 點擊 <b class="text-white">DEPLOY</b> 進行部署。</p>
+                    <p class="text-slate-400 pl-8">設定<b>地上(F)、地下(B)樓層及棟數(U)</b>。人員到場請先點擊右下角<b class="text-slate-300">「待命區」</b>進行集結與任務預備。</p>
                 </section>
 
                 <section class="space-y-2">
@@ -227,24 +236,13 @@
                     </h4>
                     <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
                         <li><b>殘氣回報：</b>點擊分區 ➔ 拉動該組的<b>「殘氣更新滑塊」</b>，系統將自動重置消耗計時。</li>
-                        <li><b>增減人員：</b>點擊分區內該小組的 <b class="text-blue-400">編輯/增減</b> 按鈕，即可臨時加入/移除隊員、更改任務或啟閉氣瓶監控，並自動留下變更紀錄。</li>
+                        <li><b>增減人員：</b>點擊分區內該小組的 <b class="text-blue-400">編輯/增減</b> 按鈕，即可臨時加入/移除隊員或更改狀態。</li>
                     </ul>
                 </section>
 
-                <section class="space-y-2">
-                    <h4 class="text-white font-black flex items-center gap-2">
-                        <span class="w-6 h-6 bg-orange-600 rounded-full flex items-center justify-center text-[10px]">3</span> 
-                        位置轉移與安全撤離
-                    </h4>
-                    <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
-                        <li><b>位置移動：</b>長按小組名牌 ➔ 直接<b>拖曳 (Drag & Drop)</b> 至新區域 ➔ 放開。</li>
-                        <li><b>人員撤離：</b>點擊分區 ➔ 點選紅色的 <b class="text-red-400">撤離</b> 按鈕，人員即回歸待命選單。</li>
-                    </ul>
-                </section>
-
-                <section class="space-y-2 border-l-4 border-red-600 pl-4 bg-red-900/10 py-3 rounded-r-lg">
-                    <h4 class="text-red-500 font-black flex items-center gap-2">🚨 緊急狀態與日誌匯出</h4>
-                    <p class="text-slate-400">當氣量低於 <b>50b</b>，區域將發出紅色高頻閃爍；遇突發狀況請按右上角 <b class="text-red-500">MAYDAY</b>。右側日誌在手機版可點擊標題<b>摺疊/展開</b>以節省空間，結束後請點擊「匯出 CSV」保存完整火調時序紀錄。</p>
+                <section class="space-y-2 border-l-4 border-emerald-500 pl-4 bg-emerald-900/10 py-3 rounded-r-lg">
+                    <h4 class="text-emerald-400 font-black flex items-center gap-2">🔄 拖曳撤出 (Drag & Drop)</h4>
+                    <p class="text-slate-400">當人員退出熱區時，請直接長按小組名牌<b>拖曳至右下角「待命區」</b>。系統會自動將該組任務改為「待」，並<b>自動解除氣瓶監控</b>，確保符合現場管制邏輯。若需完全收隊，請點擊彈窗內的紅色「撤離」按鈕。</p>
                 </section>
 
                 <div class="pt-4 text-center">
@@ -259,7 +257,7 @@
         let personnelData = {}, floorCount = 1, basementCount = 0, unitCount = 1, selectedSector = null, selectedTask = '滅火攻擊', deployedTeams = [], logHistory = [];
         let editingTeamUid = null; 
         const CONSUMPTION_PER_MIN = 10;
-        const taskMap = { '滅火攻擊': '滅', '人命搜救': '搜', '通風排煙': '排', '周界防護': '周', '侷限火勢': '侷', '殘火處理': '殘', '幕僚作業': '幕', 'RIT': 'RIT' };
+        const taskMap = { '滅火攻擊': '滅', '人命搜救': '搜', '通風排煙': '排', '周界防護': '周', '侷限火勢': '侷', '殘火處理': '殘', '幕僚作業': '幕', 'RIT': 'RIT', '待命集結': '待' };
 
         async function loadPersonnel() {
             try {
@@ -334,7 +332,10 @@
             let air100 = teams.some(t => t.usesAir && calculateAir(t) <= 100);
             let statusClass = air50 ? 'warning-red' : (air100 ? 'warning-orange' : 'border-slate-800');
             
-            let bgColor = isInside ? (name.includes('B') ? 'bg-basement' : 'bg-inside') : (name === "RIT救援區" ? 'bg-rit' : 'bg-outside');
+            // 💡 判斷背景顏色 (新增待命區專屬色)
+            let bgColor = isInside ? (name.includes('B') ? 'bg-basement' : 'bg-inside') : 
+                          (name === "RIT救援區" ? 'bg-rit' : 
+                          (name === "待命區" ? 'bg-staging' : 'bg-outside'));
 
             const btn = document.createElement('div');
             btn.className = `sector-btn p-3 w-full ${bgColor} ${statusClass}`;
@@ -370,7 +371,7 @@
                         <span class="font-black text-white text-lg">${t.leader} 小組</span>
                         <div class="flex gap-2">
                             <button onclick="editTeam('${t.uid}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-black text-white">編輯/增減</button>
-                            <button onclick="removeTeam('${t.uid}')" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-black text-white">撤離</button>
+                            <button onclick="removeTeam('${t.uid}')" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-black text-white">徹底撤離</button>
                         </div>
                     </div>
                     <div class="text-[11px] text-slate-500 font-bold italic">隊員：${t.members.join('、')}</div>
@@ -384,7 +385,7 @@
                                oninput="document.getElementById('update-air-val-${t.uid}').innerText = this.value + ' bar'"
                                onchange="updateAir('${t.uid}', this.value)" 
                                class="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
-                    </div>` : '<div class="text-center py-2 text-slate-600 text-[10px] font-black">此組未啟用氣瓶監控</div>'}
+                    </div>` : '<div class="text-center py-2 text-slate-600 text-[10px] font-black">此組目前未啟用氣瓶</div>'}
                 </div>`
             }).join('');
             
@@ -393,6 +394,15 @@
             document.getElementById('member-3-select').value = "";
             document.getElementById('member-4-select').value = ""; 
             
+            // 💡 如果點開的是待命區，自動幫他選好「待命集結」並關閉氣瓶
+            if (name === "待命區") {
+                setTask('待命集結');
+                document.getElementById('air-toggle').checked = false;
+                toggleAirInput();
+            } else {
+                setTask('滅火攻擊'); // 預設
+            }
+
             updateMemberOptions(); 
             document.getElementById('modal').classList.remove('hidden');
         }
@@ -467,15 +477,19 @@
                 let airLog = "";
                 if (team.usesAir !== usesAir) {
                     team.usesAir = usesAir;
-                    airLog = usesAir ? " (重新啟用氣瓶)" : " (關閉氣瓶監控)";
+                    airLog = usesAir ? " (啟用氣瓶監控)" : " (關閉氣瓶監控)";
                     if (usesAir) {
                         team.initialAir = initAir;
                         team.startTime = Date.now();
                         team.n100 = false; team.n50 = false;
                     }
+                } else if (usesAir) {
+                    // 如果氣瓶一直開著，編輯時也順便更新起始氣量
+                    team.initialAir = initAir;
+                    team.startTime = Date.now();
                 }
                 
-                addLog("小組更新", `🔄 [${team.location}] 成員變更：${oldMembers} ➔ ${ms.join('、')} (${selectedTask})${airLog}`); 
+                addLog("小組更新", `🔄 [${team.location}] 狀態變更：${oldMembers} ➔ ${ms.join('、')} (${selectedTask})${airLog}`); 
                 
                 editingTeamUid = null;
                 const btn = document.getElementById('submit-btn');
@@ -494,7 +508,7 @@
                 initialAir: initAir, 
                 startTime: Date.now(), n100: false, n50: false 
             });
-            addLog("戰術指派", `🚀 [${selectedSector}] 指派：${ms.join('、')} (${selectedTask})`); 
+            addLog("管制指派", `🚀 [${selectedSector}] 指派：${ms.join('、')} (${selectedTask})`); 
             renderMap(); closeModal(); 
         }
 
@@ -507,13 +521,23 @@
             document.getElementById('status-board').prepend(logEl);
         }
 
+        // 🌟 核心：拖曳撤出至待命區的自動化邏輯 🌟
         function handleDrop(e, newLoc) {
             e.preventDefault();
             const uid = e.dataTransfer.getData('uid');
             const team = deployedTeams.find(t => t.uid === uid);
             if (team && team.location !== newLoc) {
-                const old = team.location; team.location = newLoc;
-                addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]`); 
+                const old = team.location; 
+                team.location = newLoc;
+
+                // 如果拖曳到「待命區」，自動切換任務為「待命」並解除氣瓶
+                if (newLoc === "待命區") {
+                    team.task = "待命集結";
+                    team.usesAir = false;
+                    addLog("安全撤出", `🔙 ${team.members.join('、')} 從 [${old}] 撤出至 [待命區] (氣瓶監控解除)`);
+                } else {
+                    addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]`); 
+                }
                 renderMap();
             }
         }
@@ -522,19 +546,27 @@
             const idx = deployedTeams.findIndex(t => t.uid === uid);
             if (idx !== -1) {
                 const team = deployedTeams[idx];
-                addLog("任務撤離", `🔙 ${team.members.join('、')} 已從 [${team.location}] 撤離`);
+                addLog("徹底收隊", `👋 ${team.members.join('、')} 已從戰術板徹底移除`);
                 deployedTeams.splice(idx, 1);
                 renderMap(); closeModal();
             }
         }
 
         function renderMap() {
-            ['pos-front', 'pos-back', 'pos-left', 'pos-right', 'pos-inside', 'pos-rit'].forEach(id => document.getElementById(id).innerHTML = '');
+            ['pos-front', 'pos-back', 'pos-left', 'pos-right', 'pos-inside', 'pos-rit', 'pos-staging'].forEach(id => {
+                if(document.getElementById(id)) document.getElementById(id).innerHTML = '';
+            });
+            
             document.getElementById('pos-front').appendChild(createBtn("第一面(前)", false));
             document.getElementById('pos-back').appendChild(createBtn("第三面(後)", false));
             document.getElementById('pos-left').appendChild(createBtn("第二面(左)", false));
             document.getElementById('pos-right').appendChild(createBtn("第四面(右)", false));
             document.getElementById('pos-rit').appendChild(createBtn("RIT救援區", false));
+            
+            // 🌟 繪製右下角的待命區 🌟
+            if(document.getElementById('pos-staging')) {
+                document.getElementById('pos-staging').appendChild(createBtn("待命區", false));
+            }
 
             const inside = document.getElementById('pos-inside');
             inside.style.display = 'grid'; 
@@ -553,23 +585,25 @@
                     inside.appendChild(createBtn(label));
                 }
             }
-            document.getElementById('team-count').innerText = deployedTeams.length;
 
-            // 🌟 統計人數邏輯 🌟
-            let totalPersonnel = 0;
-            for (let u in personnelData) {
-                totalPersonnel += personnelData[u].length;
-            }
-
+            // 🌟 統計人數精準計算 (總數 / 待命 / 部署) 🌟
+            let totalOnScene = 0;
+            let standbyCount = 0;
             let deployedCount = 0;
+
             deployedTeams.forEach(t => {
-                deployedCount += t.members.length;
+                const count = t.members.length;
+                totalOnScene += count;
+                if (t.location === '待命區') {
+                    standbyCount += count;
+                } else {
+                    deployedCount += count;
+                }
             });
 
-            let standbyCount = totalPersonnel - deployedCount;
-
-            if(document.getElementById('stat-deployed')) document.getElementById('stat-deployed').innerText = deployedCount;
+            if(document.getElementById('stat-total')) document.getElementById('stat-total').innerText = totalOnScene;
             if(document.getElementById('stat-standby')) document.getElementById('stat-standby').innerText = standbyCount;
+            if(document.getElementById('stat-deployed')) document.getElementById('stat-deployed').innerText = deployedCount;
         }
 
         function triggerMayday() {
@@ -606,11 +640,11 @@
             let csv = "\uFEFF時間,動作,詳情\n";
             logHistory.forEach(r => csv += `"${r.time}","${r.action}","${r.msg}"\n`);
             const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `FireLog.csv`; a.click();
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `FireLog_${Date.now()}.csv`; a.click();
         }
         async function captureScreen() {
             const canvas = await html2canvas(document.body, { backgroundColor: "#020617" });
-            const a = document.createElement("a"); a.href = canvas.toDataURL(); a.download = `TacticalBoard.png`; a.click();
+            const a = document.createElement("a"); a.href = canvas.toDataURL(); a.download = `TacticalBoard_${Date.now()}.png`; a.click();
         }
 
         setInterval(() => { 
