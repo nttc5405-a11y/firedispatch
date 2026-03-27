@@ -33,14 +33,7 @@
             display: block;
             appearance: auto !important;
         }
-        
-        /* 針對單位群組標題的樣式設定 */
-        optgroup {
-            background-color: #0f172a;
-            color: #60a5fa;
-            font-style: normal;
-            font-weight: 900;
-        }
+        optgroup { background-color: #0f172a; color: #60a5fa; font-style: normal; font-weight: 900; }
 
         .sector-btn { transition: all 0.2s; min-height: 120px; border-radius: 1rem; border-width: 2px; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .bg-inside { background-color: #111827; border-color: #374151; }
@@ -120,7 +113,6 @@
                 <span class="text-[10px] text-slate-400 font-bold" id="sync-text">尚未啟用同步</span>
             </div>
         </div>
-        </div>
 
         <div id="capture-area" class="flex-1 flex items-center justify-center p-2">
             <div class="grid-layout">
@@ -141,14 +133,11 @@
             <summary class="flex justify-between items-center p-4 bg-slate-950 cursor-pointer list-none border-b border-slate-800 lg:cursor-default">
                 <div class="flex items-center gap-3">
                     <h2 class="font-black text-sm tracking-widest text-slate-400 uppercase">📋 Live Incident Log</h2>
-                    <span id="team-count" class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-mono font-bold hidden">0</span>
                 </div>
                 <span class="text-slate-500 transition-transform group-open:rotate-180 lg:hidden">▼</span>
             </summary>
-
             <div class="flex flex-col h-[30vh] lg:h-[calc(100vh-130px)]">
                 <div id="status-board" class="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-[11px] leading-relaxed bg-slate-950/50"></div>
-                
                 <div class="p-4 bg-slate-950 border-t border-slate-800 grid grid-cols-2 gap-2">
                     <button onclick="exportLogs()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black border border-slate-700">匯出 CSV</button>
                     <button onclick="captureScreen()" class="py-3 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-black border border-blue-600">戰術截圖</button>
@@ -266,7 +255,7 @@
 
                 <section class="space-y-2 border-l-4 border-emerald-500 pl-4 bg-emerald-900/10 py-3 rounded-r-lg">
                     <h4 class="text-emerald-400 font-black flex items-center gap-2">🔄 拖曳撤出 (Drag & Drop)</h4>
-                    <p class="text-slate-400">當人員退出熱區時，請直接長按小組名牌<b>拖曳至右下角「待命區」</b>。系統會自動將該組任務改為「待」，並<b>自動解除氣瓶監控</b>。若需完全收隊，請點擊彈窗內的紅色「撤離」按鈕。</p>
+                    <p class="text-slate-400">當人員退出熱區時，請直接長按小組名牌<b>拖曳至右下角「待命區」</b>。系統會自動將該組任務改為「待」，並<b>自動解除氣瓶監控</b>。若需完全收隊，請點擊彈窗內的紅色「徹底撤離」按鈕。</p>
                 </section>
 
                 <div class="pt-4 text-center">
@@ -302,7 +291,6 @@
             populateUnitSelect();
         }
 
-        // 🌟 新增：臨時建置人員功能 🌟
         function addCustomPersonnel() {
             const unitInput = prompt("請輸入該員隸屬單位 (例如: 關山大隊、支援人員):", "臨時支援");
             if (!unitInput) return;
@@ -315,12 +303,9 @@
             if (!personnelData[unit]) personnelData[unit] = [];
             if (!personnelData[unit].includes(name)) {
                 personnelData[unit].push(name);
-                populateUnitSelect(); // 重新整理下拉選單
-                
-                // 自動將單位切換到剛才新增的單位，方便點選
+                populateUnitSelect(); 
                 document.getElementById('unit-select').value = unit;
                 updateMemberOptions();
-                
                 alert(`已成功將 [${name}] 加入 [${unit}] 名單！`);
                 addLog("系統建置", `📝 手動新增人員: [${unit}] ${name}`);
             } else {
@@ -345,9 +330,7 @@
 
             const globalDeployed = new Set(); 
             deployedTeams.forEach(t => { 
-                if (t.uid !== editingTeamUid) {
-                    t.members.forEach(m => globalDeployed.add(m)); 
-                }
+                if (t.uid !== editingTeamUid) { t.members.forEach(m => globalDeployed.add(m)); }
             });
 
             let availablePersonnel = [];
@@ -359,8 +342,6 @@
 
             const render = (el, otherSelected) => {
                 let html = `<option value="">(點選名單)</option>`;
-                
-                // 🌟 優化選單群組與辨識度 🌟
                 if (unit === "ALL") {
                     for (let u in personnelData) {
                         let availableInUnit = personnelData[u].filter(n => availablePersonnel.includes(n) && !otherSelected.includes(n));
@@ -374,7 +355,6 @@
                     let finalOptions = availablePersonnel.filter(n => !otherSelected.includes(n));
                     html += finalOptions.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
                 }
-
                 const prevVal = el.value;
                 el.innerHTML = html;
                 el.value = prevVal;
@@ -631,11 +611,9 @@
             document.getElementById('pos-back').appendChild(createBtn("第三面(後)", false));
             document.getElementById('pos-left').appendChild(createBtn("第二面(左)", false));
             document.getElementById('pos-right').appendChild(createBtn("第四面(右)", false));
-            document.getElementById('pos-rit').appendChild(createBtn("RIT救援區", false));
             
-            if(document.getElementById('pos-staging')) {
-                document.getElementById('pos-staging').appendChild(createBtn("待命區", false));
-            }
+            if(document.getElementById('pos-rit')) document.getElementById('pos-rit').appendChild(createBtn("RIT救援區", false));
+            if(document.getElementById('pos-staging')) document.getElementById('pos-staging').appendChild(createBtn("待命區", false));
 
             const inside = document.getElementById('pos-inside');
             inside.style.display = 'grid'; 
@@ -767,36 +745,22 @@
         function toggleManual() {
             document.getElementById('manual-modal').classList.toggle('hidden');
         }
-    </script>
-    <script>
-    document.addEventListener('contextmenu', event => event.preventDefault());
-    document.onkeydown = function(e) {
-        if (e.keyCode === 123) return false;
-        if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) return false;
-        if (e.ctrlKey && e.keyCode === 85) return false;
-        if (e.ctrlKey && e.keyCode === 83) return false;
-    };
-    document.addEventListener('selectstart', e => e.preventDefault());
-    </script>
-   # // ================= 雲端自動同步邏輯 =================
-    #    // 🚨 替換成你剛剛在 Google Apps Script 取得的網址
+
+        // ================= 雲端自動同步邏輯 =================
+        // 🚨 替換成你剛剛在 Google Apps Script 取得的網址 🚨
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxXEXwPnOkKJE9rbSL8mZZAYFXHHqKMvrXAlLti2wGD3vbWrdRjLJyudZtQcYbQDMy4Yg/exec'; 
         
-    #    // 產生這次案件的專屬分頁名稱 (格式: 火警_月日_時分)
         const d = new Date();
         const SESSION_NAME = '火警_' + 
             String(d.getMonth()+1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '_' + 
             String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
         
-        let lastSyncedLogIndex = 0; #// 紀錄上次同步到第幾筆日誌
+        let lastSyncedLogIndex = 0; 
 
         async function syncToCloud() {
             if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxXEXwPnOkKJE9rbSL8mZZAYFXHHqKMvrXAlLti2wGD3vbWrdRjLJyudZtQcYbQDMy4Yg/exec') return;
 
-         #   // 只抓取還沒上傳過的新日誌 (必須反轉，因為前端日誌是最新在最上面，傳給試算表要按時間順序)
             const logsToSync = logHistory.slice(lastSyncedLogIndex);
-            
-        #    // 如果沒有新動作，就不耗費資源上傳
             if (logsToSync.length === 0) return; 
 
             const stats = {
@@ -805,27 +769,21 @@
                 deployed: document.getElementById('stat-deployed').innerText
             };
 
-            const payload = {
-                sessionName: SESSION_NAME,
-                logs: logsToSync,
-                stats: stats
-            };
+            const payload = { sessionName: SESSION_NAME, logs: logsToSync, stats: stats };
 
-            #// UI 亮黃燈提示同步中
             document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
             document.getElementById('sync-text').innerText = '雲端同步中...';
 
             try {
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-             #       // 解決 CORS 問題的關鍵：用 text/plain 發送 JSON
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
 
                 if(result.status === 'success') {
-                    lastSyncedLogIndex += logsToSync.length; #// 更新進度
+                    lastSyncedLogIndex += logsToSync.length; 
                     document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
                     document.getElementById('sync-text').innerText = `已同步 (分頁: ${SESSION_NAME})`;
                 }
@@ -835,8 +793,20 @@
             }
         }
 
-        #// 設定每 60 秒 (60000 毫秒) 自動執行一次同步
-        setInterval(syncToCloud, 60000);
-       # // ================= 雲端自動同步邏輯結束 =================
+        setInterval(syncToCloud, 60000); 
+        // ================= 雲端自動同步邏輯結束 =================
+
+    </script>
+    <script>
+    // 防護語法
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.onkeydown = function(e) {
+        if (e.keyCode === 123) return false;
+        if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) return false;
+        if (e.ctrlKey && e.keyCode === 85) return false;
+        if (e.ctrlKey && e.keyCode === 83) return false;
+    };
+    document.addEventListener('selectstart', e => e.preventDefault());
+    </script>
 </body>
 </html>
