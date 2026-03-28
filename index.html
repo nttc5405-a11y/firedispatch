@@ -90,7 +90,7 @@
             </div>
         </div>
 
-        <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-700 mb-4 flex justify-between items-center shadow-md">
+        <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-700 mb-4 flex flex-wrap gap-2 justify-between items-center shadow-md">
             <div class="flex gap-2 flex-wrap">
                 <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800">
                     <span class="text-[10px] text-slate-500 font-black mr-2">地上(F)</span>
@@ -111,9 +111,10 @@
                     <button onclick="adjustUnits(1)" class="text-slate-400 hover:text-white px-2 font-black">+</button>
                 </div>
             </div>
-            <div id="cloud-sync-status" class="flex items-center gap-2 px-3 border-l border-slate-700 hidden lg:flex">
-                <span class="w-2 h-2 rounded-full bg-slate-500" id="sync-dot"></span>
-                <span class="text-[10px] text-slate-400 font-bold" id="sync-text">尚未啟用同步</span>
+            
+            <div id="cloud-sync-status" class="flex items-center gap-1.5 px-2 border-l border-slate-700">
+                <span class="w-2 h-2 rounded-full bg-slate-500 shrink-0" id="sync-dot"></span>
+                <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap" id="sync-text">尚未啟用同步</span>
             </div>
         </div>
 
@@ -251,15 +252,15 @@
                         自動連動與氣壓回報
                     </h4>
                     <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
-                        <li><b>任務連動：</b>選擇「滅、搜、侷」將<b class="text-blue-300">自動開啟</b>氣瓶監控；選「待命」將自動關閉。</li>
+                        <li><b>任務連動：</b>除了「待命」與「幕僚」外，所有熱區任務皆會<b class="text-blue-300">自動開啟</b>氣瓶監控。</li>
                         <li><b>殘氣回報：</b>點擊分區 ➔ 拉動該組的<b>「殘氣更新滑塊」</b>以重置計時。氣壓每分鐘真實扣除10bar (每6秒扣1bar)。</li>
-                        <li><b>聲音警報：</b>當殘氣低於100b(警告)及50b(危險)時，系統會發出警示音。</li>
+                        <li><b>日誌寫入：</b>只要開啟氣瓶，人員每一次的派遣、移動與撤出，皆會自動於日誌寫入當下的精準氣壓。</li>
                     </ul>
                 </section>
 
                 <section class="space-y-2 border-l-4 border-emerald-500 pl-4 bg-emerald-900/10 py-3 rounded-r-lg">
                     <h4 class="text-emerald-400 font-black flex items-center gap-2">🔄 拖曳撤出 (Drag & Drop)</h4>
-                    <p class="text-slate-400">當人員退出熱區時，請長按小組名牌<b>拖曳至右下角「待命區」</b>。系統會自動將該組任務改為「待」，並<b>自動解除氣瓶監控</b>。若需完全收隊，請點擊彈窗內的紅色「徹底撤離」按鈕。</p>
+                    <p class="text-slate-400">當人員退出熱區時，請長按小組名牌<b>拖曳至右下角「待命區」</b>。系統會自動將該組任務改為「待」，並<b>自動記錄殘氣、解除氣瓶監控</b>。若需完全收隊，請點擊彈窗內的紅色「徹底撤離」按鈕。</p>
                 </section>
 
                 <div class="pt-4 text-center">
@@ -394,7 +395,7 @@
             render(m4S, [lS.value, m2S.value, m3S.value]);
         }
 
-        // 🌟 獲取當前氣壓字串的輔助函式 🌟
+        // 🌟 強制獲取氣壓字串，供日誌寫入時使用 🌟
         function getAirStatus(team) {
             if (!team.usesAir) return "";
             const elapsedMins = (Date.now() - team.startTime) / 60000;
@@ -406,7 +407,7 @@
             if (!team.usesAir) return 999;
             const elapsedMins = (Date.now() - team.startTime) / 60000;
             const current = Math.max(0, team.initialAir - Math.floor(elapsedMins * CONSUMPTION_PER_MIN));
-            if (current <= 100 && !team.n100) { addLog("氣量警告", `⚠️ [${team.location}] ${team.members.join('、')} 壓力低於 100b`); team.n100 = true; playSound('warn'); }
+            if (current <= 100 && !team.n100) { addLog("氣量警告", `⚠️ [${team.location}] ${team.members.join('、')} 壓力低於 100b (目前:${current}b)`); team.n100 = true; playSound('warn'); }
             if (current <= 50 && !team.n50) { addLog("緊急回撤", `🆘 [${team.location}] ${team.members.join('、')} 氣壓危急!`); team.n50 = true; playSound('danger'); }
             return current;
         }
@@ -538,6 +539,7 @@
             }
         }
 
+        // 🌟 預設「非待命/非幕僚」的任務，一律強制開啟氣瓶 🌟
         function setTask(t) { 
             selectedTask = t; 
             document.querySelectorAll('.task-btn').forEach(b => {
@@ -545,12 +547,11 @@
                 else { b.classList.remove('active'); }
             });
             
-            const airTasks = ['滅火攻擊', '人命搜救', '侷限火勢'];
             const airToggle = document.getElementById('air-toggle');
-            if (airTasks.includes(t)) {
-                airToggle.checked = true;
-            } else if (t === '待命集結') {
+            if (['待命集結', '幕僚作業'].includes(t)) {
                 airToggle.checked = false;
+            } else {
+                airToggle.checked = true;
             }
             toggleAirInput();
         }
@@ -572,7 +573,7 @@
             if (editingTeamUid) {
                 const team = deployedTeams.find(t => t.uid === editingTeamUid);
                 const oldMembers = team.members.join('、');
-                const oldAirStr = getAirStatus(team); // 取得變更前的氣壓
+                const oldAirStr = getAirStatus(team); // 變更前的當下氣壓
                 
                 team.leader = l;
                 team.members = ms;
@@ -590,7 +591,7 @@
                 } else if (usesAir) {
                     team.initialAir = initAir;
                     team.startTime = Date.now();
-                    airLog = ` (氣壓重置:${initAir}b)`;
+                    airLog = ` (氣壓重置為:${initAir}b)`;
                 }
                 
                 addLog("小組更新", `🔄 [${team.location}] ${oldMembers} ➔ ${ms.join('、')} (${selectedTask})${oldAirStr}${airLog}`); 
@@ -613,7 +614,6 @@
                 startTime: Date.now(), n100: false, n50: false 
             });
             
-            // 🌟 部署時加入起始氣壓 🌟
             const airStr = usesAir ? ` (氣壓:${initAir}b)` : "";
             addLog("管制指派", `🚀 [${selectedSector}] 指派：${ms.join('、')} (${selectedTask})${airStr}`); 
             renderMap(); closeModal(); 
@@ -634,7 +634,7 @@
             const team = deployedTeams.find(t => t.uid === uid);
             if (team && team.location !== newLoc) {
                 const old = team.location; 
-                const airStr = getAirStatus(team); // 🌟 取得移動瞬間的氣壓 🌟
+                const airStr = getAirStatus(team); // 取得拖曳瞬間的氣壓
                 team.location = newLoc;
 
                 if (newLoc === "待命區") {
@@ -655,8 +655,8 @@
             const idx = deployedTeams.findIndex(t => t.uid === uid);
             if (idx !== -1) {
                 const team = deployedTeams[idx];
-                const airStr = getAirStatus(team); // 🌟 取得移除瞬間的氣壓 🌟
-                addLog("徹底收隊", `👋 ${team.members.join('、')} 已移除${airStr}`);
+                const airStr = getAirStatus(team); // 取得徹底移除時的氣壓
+                addLog("徹底收隊", `👋 ${team.members.join('、')} 已從現場移除${airStr}`);
                 deployedTeams.splice(idx, 1);
                 renderMap(); closeModal();
             }
@@ -792,6 +792,7 @@
         function toggleManual() { document.getElementById('manual-modal').classList.toggle('hidden'); }
 
         // ================= 雲端自動同步邏輯 =================
+        // 🚨 記得把這裡替換成你的 Google Apps Script 網址！
         const GAS_WEB_APP_URL = '請貼上你的網頁應用程式網址'; 
         
         const d = new Date();
@@ -802,6 +803,7 @@
         let lastSyncedLogIndex = 0; 
 
         async function syncToCloud() {
+            // 修正防呆保護：只要不是預設字串，就允許執行同步
             if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') return;
 
             const logsToSync = logHistory.slice(lastSyncedLogIndex);
