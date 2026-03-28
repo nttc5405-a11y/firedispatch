@@ -437,7 +437,9 @@
             populateUnitSelect();
             
             addLog("人員報到", `✅ [點名報到] ${unit} ${name}`);
-            playSound('sync'); // 點名成功音效
+            playSound('sync'); // 原本的滴聲
+            
+            speakName(name); // 🌟 新增：喊出名字 🌟
             
             // 按鈕變色表示已報到
             if (btnEl) {
@@ -490,8 +492,11 @@
                             addLog("人員報到", `✅ [掃碼成功] ${unit} ${name}`);
                             playSound('sync');
                             
+                            speakName(name); // 🌟 新增：喊出名字 🌟
+                            
                             // 顯示綠色成功文字
                             resultEl.innerText = `✅ 成功登錄：${name}`;
+                            // ... 略 ...
                             resultEl.className = "text-emerald-400 font-black text-2xl mt-6 h-8 transition-opacity duration-300 tracking-widest drop-shadow-[0_0_10px_rgba(16,185,129,0.8)]";
                             
                         } else {
