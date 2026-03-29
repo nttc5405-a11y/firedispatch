@@ -108,8 +108,12 @@
                         📷 掃碼報到
                     </button>
                     
-                    <button onclick="fetchStateFromCloud()" class="bg-purple-700 hover:bg-purple-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all flex items-center gap-1">
+                    <button id="load-state-btn" onclick="fetchStateFromCloud()" class="bg-purple-700 hover:bg-purple-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all flex items-center gap-1">
                         📥 載入現場狀況
+                    </button>
+                    
+                    <button id="takeover-btn" onclick="takeoverCommand()" class="hidden bg-red-700 hover:bg-red-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all flex items-center gap-1">
+                        🔥 接管指揮
                     </button>
                 </div>
             </div>
@@ -878,6 +882,11 @@
         }
         
         async function fetchStateFromCloud() {
+            // 🌟 1. 新增：防呆確認彈窗 🌟
+            if (!confirm("確定要從雲端載入現場狀況嗎？\n\n(注意：這將會覆蓋您目前的畫面，並自動進入「唯讀觀看模式」)")) {
+                return; // 如果按下取消，就直接終止動作
+            }
+
             initAudioOnce();
             if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') {
                 alert("請先在代碼中填入正確的 Google Apps Script 網址！"); return;
@@ -886,16 +895,18 @@
             const incidentId = document.getElementById('incident-id-input').value.trim();
             if (!incidentId) { alert("請先輸入案件編號！"); return; }
 
-            // 🌟 首次點擊，切換為觀看模式 🌟
+            // 首次點擊，切換為觀看模式
             if (!isReadOnly) {
                 isReadOnly = true;
-                clearInterval(syncIntervalId); // 關閉自動上傳定時器
-                syncIntervalId = setInterval(fetchStateFromCloud, 30000); // 啟動每30秒自動下載定時器
+                clearInterval(syncIntervalId); // 關閉自動上傳
+                syncIntervalId = setInterval(fetchStateFromCloud, 30000); // 改為每30秒自動下載
                 
                 // UI 變更提示
                 document.getElementById('sync-status').innerText = '👁️ VIEW-ONLY MODE (唯讀觀看模式)';
                 document.getElementById('sync-status').className = 'text-[10px] text-purple-400 font-bold uppercase tracking-widest mb-2 mt-1 animate-pulse';
-                alert("⚠️ 切換至「唯讀觀看模式」：\n\n1. 已停止自動上傳\n2. 已停止自動氣量警報\n3. 將每 30 秒自動更新現場畫面\n\n(此模式下無法操作人員部署)");
+                
+                // 🌟 顯示接管指揮按鈕 🌟
+                document.getElementById('takeover-btn').classList.remove('hidden');
             }
 
             document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-purple-400 animate-pulse';
@@ -932,7 +943,6 @@
                     document.getElementById('unit-display').innerText = unitCount;
 
                     renderMap();
-                    // 只有手動點擊時才發出提示音，自動更新時保持安靜
                     if (event && event.type === 'click') { playSound('sync'); }
                     
                     document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
@@ -948,6 +958,31 @@
                 document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-red-500';
                 document.getElementById('sync-text').innerText = '下載失敗';
             }
+        }
+
+        // 🌟 2. 新增：接管指揮權功能 🌟
+        function takeoverCommand() {
+            if (!confirm("⚠️ 警告：確定要接管指揮權嗎？\n\n接管後，這台設備將成為「主控端」，您的操作會覆蓋雲端的紀錄。\n\n(請務必確認原指揮官的平板已經沒電、關閉或停止操作，以免發生指令衝突！)")) {
+                return;
+            }
+            
+            isReadOnly = false; // 解除觀看模式
+            clearInterval(syncIntervalId); // 停止每 30 秒下載
+            syncIntervalId = setInterval(syncToCloud, 30000); // 重新啟動每 30 秒上傳
+            
+            // 恢復 UI 狀態
+            document.getElementById('sync-status').innerText = '● CHENGGONG FIRE UNIT CONNECTED';
+            document.getElementById('sync-status').className = 'text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-2 mt-1';
+            
+            // 隱藏接管按鈕
+            document.getElementById('takeover-btn').classList.add('hidden');
+            
+            // 寫入日誌並重繪畫面 (解鎖拖曳功能)
+            addLog("指揮權轉移", "🔥 本機已接管指揮權，恢復人員拖曳與自動警報。");
+            renderMap();
+            playSound('sync');
+            
+            alert("✅ 已成功接管指揮權！\n氣壓警報與人員拖曳功能已解鎖。");
         }
 
         // 預設啟動：每 30 秒自動上傳 (主控模式)
