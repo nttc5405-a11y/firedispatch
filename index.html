@@ -9,30 +9,32 @@
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
+        /* 紅色危急 */
         @keyframes pulse-red {
             0%, 100% { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; background-color: rgba(239, 68, 68, 0.4); }
             50% { border-color: #ffffff; box-shadow: 0 0 30px #ff0000; background-color: rgba(239, 68, 68, 0.1); }
         }
+        /* 橘色警告 */
         @keyframes pulse-orange {
             0%, 100% { border-color: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
             50% { border-color: #ffffff; box-shadow: 0 0 20px #f59e0b; }
         }
+        /* 🌟 新增：藍色回報提示 🌟 */
+        @keyframes pulse-blue {
+            0%, 100% { border-color: #3b82f6; box-shadow: 0 0 15px #3b82f6; background-color: rgba(59, 130, 246, 0.2); }
+            50% { border-color: #ffffff; box-shadow: 0 0 25px #3b82f6; background-color: rgba(59, 130, 246, 0.05); }
+        }
+
         .warning-red { animation: pulse-red 1.5s infinite; border-width: 4px !important; }
         .warning-orange { animation: pulse-orange 2s infinite; border-width: 4px !important; }
+        .warning-blue { animation: pulse-blue 2s infinite; border-width: 4px !important; }
 
         body { background-color: #020617; color: #f8fafc; user-select: none; overflow-x: hidden; touch-action: manipulation; }
         
         select { 
-            background-color: #1e293b !important; 
-            color: #ffffff !important; 
-            border: 2px solid #3b82f6 !important; 
-            padding: 12px !important;
-            font-size: 16px !important; 
-            font-weight: 900 !important;
-            border-radius: 12px;
-            width: 100%;
-            display: block;
-            appearance: auto !important;
+            background-color: #1e293b !important; color: #ffffff !important; border: 2px solid #3b82f6 !important; 
+            padding: 12px !important; font-size: 16px !important; font-weight: 900 !important;
+            border-radius: 12px; width: 100%; display: block; appearance: auto !important;
         }
         optgroup { background-color: #0f172a; color: #60a5fa; font-style: normal; font-weight: 900; }
 
@@ -262,6 +264,53 @@
         </div>
     </div>
 
+    <div id="manual-modal" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden p-4 z-[60]">
+        <div class="bg-slate-900 w-full max-w-2xl rounded-[2.5rem] border border-slate-700 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                <div>
+                    <h3 class="text-xl font-black text-blue-400">📖 系統操作手冊</h3>
+                    <p class="text-[10px] text-slate-500 uppercase">User Manual & SOP</p>
+                </div>
+                <button onclick="toggleManual()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl hover:bg-slate-700 transition-colors">&times;</button>
+            </div>
+            
+            <div class="p-8 overflow-y-auto space-y-6 text-sm leading-relaxed">
+                
+                <section class="space-y-2">
+                    <h4 class="text-white font-black flex items-center gap-2">
+                        <span class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">1</span> 
+                        數位報到與 QR 掃碼
+                    </h4>
+                    <p class="text-slate-400 pl-8">點擊上方<b class="text-blue-400">「🔄 載入上班名冊」</b>可自動從雲端撈取當日基本名單，點擊姓名即可一鍵報到。支援<b class="text-emerald-400">「📷 掃碼報到」</b>，外援或現場人員持專屬 QR Code 管制卡，可如掃發票般連續掃描，並帶有語音提示快速匯入名單。</p>
+                </section>
+
+                <section class="space-y-2">
+                    <h4 class="text-white font-black flex items-center gap-2">
+                        <span class="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center text-[10px]">2</span> 
+                        任務部署與拖曳變更
+                    </h4>
+                    <p class="text-slate-400 pl-8">點擊建築作業區（如 1F、2F）開啟面板，指派帶隊官、任務與氣瓶起始壓力 (Bar)。欲變更位置時，直接<b>長按小組名牌進行拖曳 (Drag & Drop)</b>。若將人員拖曳回右下角<b class="text-slate-300">「待命區」</b>，系統將自動記錄撤出殘氣並解除氣瓶管制。</p>
+                </section>
+
+                <section class="space-y-2">
+                    <h4 class="text-white font-black flex items-center gap-2">
+                        <span class="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-[10px]">3</span> 
+                        氣瓶管制與警報提示
+                    </h4>
+                    <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
+                        <li><b>定時回報：</b>入室後系統預設每 10 分鐘會發出「雙響提示音與藍色呼吸燈」，提醒幕僚進行氣量確認（點擊該區塊拉動滑桿更新氣量後，自動重新起算 10 分鐘）。</li>
+                        <li><b>預警機制：</b>當系統推算耗氧低於 <b class="text-orange-400">100 Bar</b> 時，觸發橘燈慢閃與警告音。</li>
+                        <li><b>緊急撤離：</b>當氣壓低於 <b class="text-red-500">50 Bar</b> 時，觸發紅燈快閃與急促警示音，請立即指示人員撤出。</li>
+                    </ul>
+                </section>
+
+                <div class="pt-4 text-center">
+                    <button onclick="toggleManual()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black border border-blue-500 shadow-lg active:scale-95 transition-all">我已充分了解</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // 🚨 記得把這裡替換成你的 Google Apps Script 網址！ 🚨
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzyria_wPsV2xX4lzWQOBBSo5jIWRvEbcUMdXse5IfQEHbsJH_gJWJhwDv6xDlfFdlMVQ/exec'; 
@@ -272,7 +321,6 @@
         const CONSUMPTION_PER_MIN = 10;
         const taskMap = { '滅火攻擊': '滅', '人命搜救': '搜', '通風排煙': '排', '周界防護': '周', '侷限火勢': '侷', '殘火處理': '殘', '幕僚作業': '幕', 'RIT': 'RIT', '待命集結': '待' };
 
-        // ================= 案件編號邏輯 =================
         const d = new Date();
         let SESSION_NAME = '火警_' + 
             String(d.getMonth()+1).padStart(2, '0') + 
@@ -280,7 +328,7 @@
             String(d.getHours()).padStart(2, '0') + 
             String(d.getMinutes()).padStart(2, '0');
             
-        document.getElementById('incident-id-input').value = SESSION_NAME; // 預設填入當前時間
+        document.getElementById('incident-id-input').value = SESSION_NAME;
 
         function updateSessionName() {
             const input = document.getElementById('incident-id-input').value.trim();
@@ -290,7 +338,6 @@
             }
         }
 
-        // ================= 音效與語音處理 =================
         let audioCtx;
         function initAudioOnce() {
             if (!audioCtx) {
@@ -327,6 +374,11 @@
             if (type === 'sync') {
                 playBeep(1200, 'sine', 0.1, 0.05);
             }
+            // 🌟 10 分鐘定期回報音效 (清脆的雙聲提示)
+            if (type === 'report') {
+                playBeep(1000, 'sine', 0.2, 0.15); 
+                setTimeout(()=>playBeep(1000, 'sine', 0.2, 0.15), 300); 
+            }
             if (type === 'warn') { 
                 playBeep(880, 'square', 0.2, 0.15); 
                 setTimeout(()=>playBeep(880, 'square', 0.2, 0.15), 300); 
@@ -344,10 +396,9 @@
             }
         }
 
-        // 🌟 語音播放功能 🌟
         function speakName(name) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // 停止目前正在唸的聲音
+                window.speechSynthesis.cancel(); 
                 const utterance = new SpeechSynthesisUtterance(name + " 報到");
                 utterance.lang = 'zh-TW'; 
                 utterance.rate = 1.2;     
@@ -356,7 +407,6 @@
             }
         }
 
-        // 🌟 MAYDAY 系統修復 🌟
         function triggerMayday() {
             initAudioOnce();
             document.body.style.backgroundColor = document.body.style.backgroundColor === 'red' ? '#020617' : 'red';
@@ -364,7 +414,6 @@
             playSound('mayday');
         }
 
-        // ================= 載入與點名邏輯 =================
         async function loadPersonnel() {
             try {
                 const res = await fetch(GOOGLE_SHEET_CSV_URL);
@@ -442,7 +491,7 @@
             
             addLog("人員報到", `✅ [點名報到] ${unit} ${name}`);
             playSound('sync');
-            speakName(name); // 播放語音
+            speakName(name); 
             
             if (btnEl) {
                 btnEl.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-600', 'hover:bg-blue-700');
@@ -451,7 +500,6 @@
             }
         }
 
-        // ================= QR 掃描器邏輯 =================
         let html5QrCode;
         let lastScannedData = ""; 
         let lastScanTime = 0;
@@ -489,7 +537,7 @@
                             populateUnitSelect();
                             addLog("人員報到", `✅ [掃碼成功] ${unit} ${name}`);
                             playSound('sync');
-                            speakName(name); // 播放語音
+                            speakName(name); 
                             
                             resultEl.innerText = `✅ 成功登錄：${name}`;
                             resultEl.className = "text-emerald-400 font-black text-2xl mt-6 h-8 transition-opacity duration-300 tracking-widest drop-shadow-[0_0_10px_rgba(16,185,129,0.8)]";
@@ -524,7 +572,6 @@
             }
         }
 
-        // ================= 其餘系統邏輯 =================
         function addCustomPersonnel() {
             const unitInput = prompt("請輸入該員隸屬單位 (例如: 關山大隊、支援人員):", "臨時支援");
             if (!unitInput) return;
@@ -609,6 +656,15 @@
             const elapsedMins = (Date.now() - team.startTime) / 60000;
             const current = Math.max(0, team.initialAir - Math.floor(elapsedMins * CONSUMPTION_PER_MIN));
             
+            // 🌟 10 分鐘定期回報警示判斷 (600,000 毫秒 = 10分鐘) 🌟
+            // 若想快速測試，可將 >= 10 改成 >= 1 測試一分鐘
+            if (elapsedMins >= 10 && !team.n10min) {
+                addLog("定期回報", `⏳ [${team.location}] ${team.members.join('、')} 已入室超過 10 分鐘，請回報氣量！`);
+                team.n10min = true;
+                team.needsReport = true; // 開啟回報標記，用於產生藍色呼吸燈
+                playSound('report');
+            }
+
             if (current <= 100 && !team.n100) { 
                 addLog("氣量警告", `⚠️ [${team.location}] ${team.members.join('、')} 壓力低於 100b (目前:${current}b)`); 
                 team.n100 = true; 
@@ -624,9 +680,14 @@
 
         function createBtn(name, isInside = true) {
             const teams = deployedTeams.filter(t => t.location === name);
+            
+            // 🌟 判斷狀態，產生對應顏色的呼吸燈 🌟
             let air50 = teams.some(t => t.usesAir && calculateAir(t) <= 50);
             let air100 = teams.some(t => t.usesAir && calculateAir(t) <= 100);
-            let statusClass = air50 ? 'warning-red' : (air100 ? 'warning-orange' : 'border-slate-800');
+            let needReport = teams.some(t => t.usesAir && t.needsReport);
+            
+            // 優先層級：紅燈 (<=50) > 橘燈 (<=100) > 藍燈 (到達 10 分鐘) > 預設
+            let statusClass = air50 ? 'warning-red' : (air100 ? 'warning-orange' : (needReport ? 'warning-blue' : 'border-slate-800'));
             
             let bgColor = isInside ? (name.includes('B') ? 'bg-basement' : 'bg-inside') : 
                           (name === "RIT救援區" ? 'bg-rit' : 
@@ -739,15 +800,16 @@
             }
         }
 
-        // 🌟 修復 2：手動拉低氣量時，強制重置警告標籤 🌟
+        // 🌟 更新氣壓，同時重置警報與 10 分鐘計時標記 🌟
         function updateAir(uid, val) {
             const team = deployedTeams.find(t => t.uid === uid);
             if (team) {
                 team.initialAir = parseInt(val);
                 team.startTime = Date.now();
-                // 這裡重置警告狀態，讓系統在下一秒渲染時自動抓到並觸發警報！
                 team.n100 = false; 
                 team.n50 = false;
+                team.n10min = false;      // 重置 10 分鐘音效標記
+                team.needsReport = false; // 消除藍色呼吸燈
                 
                 addLog("壓力更新", `📲 ${team.members.join('、')} 更新氣壓為 ${val}b`);
                 renderMap(); 
@@ -792,7 +854,7 @@
             if (editingTeamUid) {
                 const team = deployedTeams.find(t => t.uid === editingTeamUid);
                 const oldMembers = team.members.join('、');
-                const oldAirStr = getAirStatus(team); // 變更前的當下氣壓
+                const oldAirStr = getAirStatus(team);
                 
                 team.leader = l;
                 team.members = ms;
@@ -807,10 +869,14 @@
                         team.startTime = Date.now();
                         team.n100 = false; 
                         team.n50 = false;
+                        team.n10min = false;
+                        team.needsReport = false;
                     }
                 } else if (usesAir) {
                     team.initialAir = initAir;
                     team.startTime = Date.now();
+                    team.n10min = false;
+                    team.needsReport = false;
                     airLog = ` (氣壓重置為:${initAir}b)`;
                 }
                 
@@ -832,7 +898,8 @@
                 uid, leader: l, members: ms, location: selectedSector, task: selectedTask, 
                 usesAir: usesAir,
                 initialAir: initAir, 
-                startTime: Date.now(), n100: false, n50: false 
+                startTime: Date.now(), 
+                n100: false, n50: false, n10min: false, needsReport: false // 🌟 初始化新標記
             });
             
             const airStr = usesAir ? ` (氣壓:${initAir}b)` : "";
@@ -858,12 +925,13 @@
             
             if (team && team.location !== newLoc) {
                 const old = team.location; 
-                const airStr = getAirStatus(team); // 取得拖曳瞬間的氣壓
+                const airStr = getAirStatus(team);
                 team.location = newLoc;
 
                 if (newLoc === "待命區") {
                     team.task = "待命集結";
                     team.usesAir = false;
+                    team.needsReport = false; // 解除提示燈
                     addLog("安全撤出", `🔙 ${team.members.join('、')} 從 [${old}] 撤出至 [待命區]${airStr} (氣瓶解除)`);
                 } else if (newLoc === "RIT救援區") {
                     team.task = "RIT";
@@ -879,7 +947,7 @@
             const idx = deployedTeams.findIndex(t => t.uid === uid);
             if (idx !== -1) {
                 const team = deployedTeams[idx];
-                const airStr = getAirStatus(team); // 取得徹底移除時的氣壓
+                const airStr = getAirStatus(team);
                 addLog("徹底收隊", `👋 ${team.members.join('、')} 已從現場移除${airStr}`);
                 deployedTeams.splice(idx, 1);
                 renderMap(); 
