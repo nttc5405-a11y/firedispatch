@@ -279,26 +279,24 @@
                         <span class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">1</span> 
                         數位報到與跨裝置同步
                     </h4>
-                    <p class="text-slate-400 pl-8">支援單位於路途中輸入案件編號，點擊<b class="text-purple-400">「📥 載入現場狀況」</b>，即可瞬間同步主指揮車的即時部署畫面（包含建築樓層與剩餘氣壓）。點擊<b class="text-blue-400">「🔄 載入上班名冊」</b>可自動撈取當日名單快速點名。現場亦支援<b class="text-emerald-400">「📷 掃碼報到」</b>快速錄入外援。</p>
+                    <p class="text-slate-400 pl-8">點擊<b class="text-purple-400">「📥 載入現場狀況」</b>後，本機會切換為<b class="text-purple-400">「👁️唯讀觀看模式」</b>，並關閉本機警報與上傳功能，改為每 30 秒自動下載主指揮車的最新畫面。點擊<b class="text-blue-400">「🔄 載入上班名冊」</b>可自動撈取當日名單。亦支援<b class="text-emerald-400">「📷 掃碼報到」</b>快速錄入外援。</p>
                 </section>
-
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
                         <span class="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center text-[10px]">2</span> 
                         任務部署與拖曳變更
                     </h4>
-                    <p class="text-slate-400 pl-8">點擊建築作業區（如 1F、2F）開啟面板，指派帶隊官、任務與氣瓶起始壓力 (Bar)。欲變更位置時，直接<b>長按小組名牌進行拖曳 (Drag & Drop)</b>。若將人員拖曳回右下角<b class="text-slate-300">「待命區」</b>，系統將自動記錄撤出殘氣並解除氣瓶管制。</p>
+                    <p class="text-slate-400 pl-8">點擊建築作業區開啟面板，指派帶隊官、任務與氣瓶起始壓力。欲變更位置時，直接<b>長按小組名牌進行拖曳 (Drag & Drop)</b>。若將人員拖曳回右下角<b class="text-slate-300">「待命區」</b>，系統將自動記錄撤出殘氣並解除管制。</p>
                 </section>
-
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
                         <span class="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-[10px]">3</span> 
                         氣瓶管制與警報提示
                     </h4>
                     <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
-                        <li><b>定時回報：</b>入室後系統預設每 10 分鐘會發出<b class="text-blue-400">「雙響提示音與藍色呼吸燈」</b>，提醒幕僚確認氣量（點擊該區塊拉動滑桿更新後，自動重新起算 10 分鐘）。</li>
+                        <li><b>定時回報：</b>預設每 10 分鐘發出<b class="text-blue-400">「雙響提示音與藍色呼吸燈」</b>（點擊該區塊更新氣壓後，自動重新起算 10 分鐘）。</li>
                         <li><b>預警機制：</b>推算耗氧低於 <b class="text-orange-400">100 Bar</b> 時，觸發橘燈慢閃與警告音。</li>
-                        <li><b>緊急撤離：</b>氣壓低於 <b class="text-red-500">50 Bar</b> 時，觸發紅燈快閃與急促警示音，請立即指示撤出。</li>
+                        <li><b>緊急撤離：</b>氣壓低於 <b class="text-red-500">50 Bar</b> 時，觸發紅燈快閃與急促警示音。</li>
                     </ul>
                 </section>
 
@@ -319,6 +317,10 @@
         const CONSUMPTION_PER_MIN = 10;
         const taskMap = { '滅火攻擊': '滅', '人命搜救': '搜', '通風排煙': '排', '周界防護': '周', '侷限火勢': '侷', '殘火處理': '殘', '幕僚作業': '幕', 'RIT': 'RIT', '待命集結': '待' };
 
+        // 🌟 觀看模式與定時器變數 🌟
+        let isReadOnly = false; 
+        let syncIntervalId;
+
         const d = new Date();
         let SESSION_NAME = '火警_' + 
             String(d.getMonth()+1).padStart(2, '0') + 
@@ -329,6 +331,11 @@
         document.getElementById('incident-id-input').value = SESSION_NAME;
 
         function updateSessionName() {
+            if (isReadOnly) {
+                alert("觀看模式下無法更改案件編號");
+                document.getElementById('incident-id-input').value = SESSION_NAME;
+                return;
+            }
             const input = document.getElementById('incident-id-input').value.trim();
             if (input) {
                 SESSION_NAME = input;
@@ -382,6 +389,7 @@
         }
 
         function triggerMayday() {
+            if (isReadOnly) { alert("觀看模式下無法操作 MAYDAY"); return; }
             initAudioOnce();
             document.body.style.backgroundColor = document.body.style.backgroundColor === 'red' ? '#020617' : 'red';
             addLog("MAYDAY", "🚩 啟動 MAYDAY！");
@@ -408,6 +416,7 @@
         }
 
         async function fetchDutyRoster() {
+            if (isReadOnly) { alert("觀看模式下無法載入名單"); return; }
             initAudioOnce();
             if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') {
                 alert("請先在代碼中填入正確的 Google Apps Script 網址！"); return;
@@ -456,6 +465,7 @@
         }
 
         function quickCheckIn(unit, name, btnEl) {
+            if (isReadOnly) { alert("觀看模式下無法報到"); return; }
             initAudioOnce();
             if (!personnelData[unit]) personnelData[unit] = [];
             if (!personnelData[unit].includes(name)) personnelData[unit].push(name);
@@ -474,6 +484,7 @@
         let html5QrCode; let lastScannedData = ""; let lastScanTime = 0; let scanResultTimer; 
 
         function startScanner() {
+            if (isReadOnly) { alert("觀看模式下無法使用掃碼功能"); return; }
             initAudioOnce();
             document.getElementById('scanner-modal').classList.remove('hidden');
             document.getElementById('scan-result').innerText = ""; document.getElementById('scan-result').classList.add('opacity-0');
@@ -586,6 +597,9 @@
             const elapsedMins = (Date.now() - team.startTime) / 60000;
             const current = Math.max(0, team.initialAir - Math.floor(elapsedMins * CONSUMPTION_PER_MIN));
             
+            // 🌟 觀看模式：只算氣壓數字，不觸發任何警示燈、警報音或寫入新日誌 🌟
+            if (isReadOnly) return current;
+
             if (elapsedMins >= 10 && !team.n10min) {
                 addLog("定期回報", `⏳ [${team.location}] ${team.members.join('、')} 已入室 10 分鐘，請回報氣量！`);
                 team.n10min = true;
@@ -607,12 +621,16 @@
         function createBtn(name, isInside = true) {
             const teams = deployedTeams.filter(t => t.location === name);
             
-            let air50 = teams.some(t => t.usesAir && calculateAir(t) <= 50);
-            let air100 = teams.some(t => t.usesAir && calculateAir(t) <= 100);
-            let needReport = teams.some(t => t.usesAir && t.needsReport);
+            let statusClass = 'border-slate-800';
             
-            let statusClass = air50 ? 'warning-red' : (air100 ? 'warning-orange' : (needReport ? 'warning-blue' : 'border-slate-800'));
-            
+            // 如果不是觀看模式，才去判斷要不要亮燈 (觀看模式下不亮本地推算的閃燈)
+            if (!isReadOnly) {
+                let air50 = teams.some(t => t.usesAir && calculateAir(t) <= 50);
+                let air100 = teams.some(t => t.usesAir && calculateAir(t) <= 100);
+                let needReport = teams.some(t => t.usesAir && t.needsReport);
+                statusClass = air50 ? 'warning-red' : (air100 ? 'warning-orange' : (needReport ? 'warning-blue' : 'border-slate-800'));
+            }
+
             let bgColor = isInside ? (name.includes('B') ? 'bg-basement' : 'bg-inside') : 
                           (name === "RIT救援區" ? 'bg-rit' : 
                           (name === "待命區" ? 'bg-staging' : 'bg-outside'));
@@ -626,7 +644,7 @@
             let content = `<div class="w-full flex justify-between items-center mb-2"><span class="text-[10px] font-black opacity-40 uppercase">${name}</span></div>`;
             teams.forEach(t => {
                 const air = calculateAir(t);
-                content += `<div class="draggable-team" draggable="true" ondragstart="event.dataTransfer.setData('uid', '${t.uid}')">
+                content += `<div class="draggable-team" draggable="${!isReadOnly}" ondragstart="event.dataTransfer.setData('uid', '${t.uid}')">
                     <div class="flex items-center justify-between">
                         <span class="text-[12px] font-black text-white"><span class="task-tag task-${taskMap[t.task]}">${taskMap[t.task]}</span>${t.leader}</span>
                         <span class="text-[15px] font-black font-mono ${t.usesAir?(air<=50?'text-red-500':'text-emerald-400'):'text-slate-500'}">${t.usesAir?air+'b':'---'}</span>
@@ -638,6 +656,7 @@
         }
 
         function openModal(name) {
+            if (isReadOnly) { alert("觀看模式下無法編輯人員狀態！"); return; }
             selectedSector = name; document.getElementById('target-title').innerText = "位置管理：" + name; 
             const list = document.getElementById('current-teams-list'); const teams = deployedTeams.filter(t => t.location === name);
             
@@ -751,6 +770,8 @@
 
         function handleDrop(e, newLoc) {
             e.preventDefault();
+            if (isReadOnly) { alert("觀看模式下無法移動人員！"); return; }
+            
             const uid = e.dataTransfer.getData('uid'); const team = deployedTeams.find(t => t.uid === uid);
             
             if (team && team.location !== newLoc) {
@@ -802,9 +823,10 @@
         function closePersonnelList() { document.getElementById('personnel-modal').classList.add('hidden'); }
         function toggleAirInput() { document.getElementById('air-input-section').style.display = document.getElementById('air-toggle').checked ? 'block' : 'none'; }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); editingTeamUid = null; const btn = document.getElementById('submit-btn'); if(btn && btn.classList.contains('bg-orange-600')) { btn.innerText = "DEPLOY / 確定部署"; btn.classList.replace('bg-orange-600', 'bg-blue-600'); } }
-        function adjustFloors(d) { floorCount = Math.max(1, Math.min(10, floorCount + d)); document.getElementById('floor-display').innerText = floorCount; renderMap(); }
-        function adjustBasements(d) { basementCount = Math.max(0, Math.min(5, basementCount + d)); document.getElementById('basement-display').innerText = basementCount; renderMap(); }
-        function adjustUnits(d) { unitCount = Math.max(1, Math.min(5, unitCount + d)); document.getElementById('unit-display').innerText = unitCount; renderMap(); }
+        
+        function adjustFloors(d) { if(isReadOnly) return; floorCount = Math.max(1, Math.min(10, floorCount + d)); document.getElementById('floor-display').innerText = floorCount; renderMap(); }
+        function adjustBasements(d) { if(isReadOnly) return; basementCount = Math.max(0, Math.min(5, basementCount + d)); document.getElementById('basement-display').innerText = basementCount; renderMap(); }
+        function adjustUnits(d) { if(isReadOnly) return; unitCount = Math.max(1, Math.min(5, unitCount + d)); document.getElementById('unit-display').innerText = unitCount; renderMap(); }
         function exportLogs() { let csv = "\uFEFF時間,動作,詳情\n"; logHistory.forEach(r => csv += `"${r.time}","${r.action}","${r.msg}"\n`); const blob = new Blob([csv], { type: 'text/csv' }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `FireLog_${Date.now()}.csv`; a.click(); }
         async function captureScreen() { const canvas = await html2canvas(document.body, { backgroundColor: "#020617" }); const a = document.createElement("a"); a.href = canvas.toDataURL(); a.download = `TacticalBoard_${Date.now()}.png`; a.click(); }
 
@@ -815,6 +837,7 @@
         // ================= 雲端同步與下載快照 =================
         let lastSyncedLogIndex = 0; 
         async function syncToCloud() {
+            if (isReadOnly) return; // 🌟 觀看模式：不執行上傳 🌟
             if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') return;
             
             const logsToSync = logHistory.slice(lastSyncedLogIndex);
@@ -856,12 +879,24 @@
         
         async function fetchStateFromCloud() {
             initAudioOnce();
-            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請先在代碼中填入正確的 Google Apps Script 網址') {
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') {
                 alert("請先在代碼中填入正確的 Google Apps Script 網址！"); return;
             }
 
             const incidentId = document.getElementById('incident-id-input').value.trim();
             if (!incidentId) { alert("請先輸入案件編號！"); return; }
+
+            // 🌟 首次點擊，切換為觀看模式 🌟
+            if (!isReadOnly) {
+                isReadOnly = true;
+                clearInterval(syncIntervalId); // 關閉自動上傳定時器
+                syncIntervalId = setInterval(fetchStateFromCloud, 30000); // 啟動每30秒自動下載定時器
+                
+                // UI 變更提示
+                document.getElementById('sync-status').innerText = '👁️ VIEW-ONLY MODE (唯讀觀看模式)';
+                document.getElementById('sync-status').className = 'text-[10px] text-purple-400 font-bold uppercase tracking-widest mb-2 mt-1 animate-pulse';
+                alert("⚠️ 切換至「唯讀觀看模式」：\n\n1. 已停止自動上傳\n2. 已停止自動氣量警報\n3. 將每 30 秒自動更新現場畫面\n\n(此模式下無法操作人員部署)");
+            }
 
             document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-purple-400 animate-pulse';
             document.getElementById('sync-text').innerText = `正在下載 ${incidentId} 現場狀態...`;
@@ -897,25 +932,26 @@
                     document.getElementById('unit-display').innerText = unitCount;
 
                     renderMap();
-                    playSound('sync');
-                    addLog("系統", "📥 成功載入主指揮車的現場部署狀態");
-
+                    // 只有手動點擊時才發出提示音，自動更新時保持安靜
+                    if (event && event.type === 'click') { playSound('sync'); }
+                    
                     document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
                     document.getElementById('sync-text').innerText = `已同步主指揮車 (${incidentId})`;
 
                 } else {
-                    alert(result.message || "找不到該案件的部署資料，請確認 A 車已上傳");
+                    if (event && event.type === 'click') { alert(result.message || "找不到該案件的部署資料，請確認主控已上傳"); }
                     document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-slate-500';
                     document.getElementById('sync-text').innerText = '尚未同步';
                 }
             } catch (e) {
-                alert("下載失敗，請檢查網路連線");
+                if (event && event.type === 'click') { alert("下載失敗，請檢查網路連線"); }
                 document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-red-500';
                 document.getElementById('sync-text').innerText = '下載失敗';
             }
         }
 
-        setInterval(syncToCloud, 30000); 
+        // 預設啟動：每 30 秒自動上傳 (主控模式)
+        syncIntervalId = setInterval(syncToCloud, 30000); 
 
     </script>
     <script>
