@@ -1279,8 +1279,9 @@
         const appState = JSON.stringify({
             deployedTeams: teamsWithSnapshot,
             floorCount, basementCount, unitCount,
-            logHistory
-        });
+            logHistory,
+            personnelData // 🌟 修正：把動態新增的人員名單也一起打包上傳 🌟
+        });;
 
         const logsToSync = logHistory.slice(lastSyncedLogIndex);
         const stats = {
@@ -1363,15 +1364,21 @@
                 floorCount    = state.floorCount    || 1;
                 basementCount = state.basementCount || 0;
                 unitCount     = state.unitCount     || 1;
+                
+                // 🌟 修正：還原 B 車的人員名單，並更新下拉選單 🌟
+                if (state.personnelData) {
+                    personnelData = state.personnelData;
+                    populateUnitSelect();
+                }
 
                 if (state.logHistory) {
                     logHistory         = state.logHistory;
                     lastSyncedLogIndex = logHistory.length;
                     const board = document.getElementById('status-board');
                     board.innerHTML = '';
-                    // FIX #8: 只顯示最新 LOG_DISPLAY_LIMIT 筆
-                    logHistory.slice(-LOG_DISPLAY_LIMIT).reverse().forEach(log => {
-                        const logEl = document.createElement('div');
+                    // FIX #8: 只顯示最新 LOG_DISPLAY_LIMIT 筆 (修正順序，最新在最上)
+                    logHistory.slice(-LOG_DISPLAY_LIMIT).forEach(log => {
+                        const logEl = document.createElement('div');;
                         logEl.className = 'p-3 rounded-2xl bg-slate-800/50 border-l-4 border-blue-500 shadow-sm';
                         logEl.innerHTML = `<span class="text-blue-400 font-black text-[10px]">[${log.time}]</span> <span class="text-white font-black">${log.action}</span><br><span class="text-slate-400">${log.msg}</span>`;
                         board.prepend(logEl);
@@ -1425,7 +1432,7 @@
         // 接管後立即重新渲染 Log 板，確保所有歷史紀錄完整顯示
         const board = document.getElementById('status-board');
         board.innerHTML = '';
-        logHistory.slice(-LOG_DISPLAY_LIMIT).reverse().forEach(log => {
+        logHistory.slice(-LOG_DISPLAY_LIMIT).forEach(log => {
             const logEl = document.createElement('div');
             logEl.className = 'p-3 rounded-2xl bg-slate-800/50 border-l-4 border-blue-500 shadow-sm';
             logEl.innerHTML = `<span class="text-blue-400 font-black text-[10px]">[${log.time}]</span> <span class="text-white font-black">${log.action}</span><br><span class="text-slate-400">${log.msg}</span>`;
