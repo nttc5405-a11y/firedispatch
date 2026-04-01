@@ -1403,17 +1403,34 @@
     // 接管指揮
     // ─────────────────────────────────────────────────
     async function takeoverCommand() {
+        // 先停止自動下載計時器，避免確認框等待期間 fetchStateFromCloud 清空 Log 板
+        clearInterval(syncIntervalId);
+
         const ok = await showDialog('confirm','🔥','接管指揮權',
             '⚠️ 警告：確定要接管指揮權嗎？\n\n接管後，這台設備將成為「主控端」，您的操作會覆蓋雲端的紀錄。\n\n請務必確認原指揮官的裝置已停止操作，以免發生指令衝突！');
-        if (!ok) return;
+
+        if (!ok) {
+            // 使用者取消 → 恢復自動下載
+            syncIntervalId = setInterval(() => fetchStateFromCloud(false), 30000);
+            return;
+        }
 
         isReadOnly = false;
-        clearInterval(syncIntervalId);
         syncIntervalId = setInterval(syncToCloud, 30000);
 
         document.getElementById('sync-status').innerText = '● CHENGGONG FIRE UNIT CONNECTED';
         document.getElementById('sync-status').className = 'text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-2 mt-1';
         document.getElementById('takeover-btn').classList.add('hidden');
+
+        // 接管後立即重新渲染 Log 板，確保所有歷史紀錄完整顯示
+        const board = document.getElementById('status-board');
+        board.innerHTML = '';
+        logHistory.slice(-LOG_DISPLAY_LIMIT).reverse().forEach(log => {
+            const logEl = document.createElement('div');
+            logEl.className = 'p-3 rounded-2xl bg-slate-800/50 border-l-4 border-blue-500 shadow-sm';
+            logEl.innerHTML = `<span class="text-blue-400 font-black text-[10px]">[${log.time}]</span> <span class="text-white font-black">${log.action}</span><br><span class="text-slate-400">${log.msg}</span>`;
+            board.prepend(logEl);
+        });
 
         addLog('指揮權轉移','🔥 本機已接管指揮權，恢復人員拖曳與自動警報。');
         markDirty();
