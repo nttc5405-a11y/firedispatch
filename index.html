@@ -681,10 +681,10 @@
         container.innerHTML = '<span class="text-blue-400 text-xs font-bold animate-pulse">連線讀取中，請稍候...</span>';
 
         try {
-            // FIX #3: GAS 無法讀取自訂 Header，改由 URL 參數傳遞 token
             const response = await fetch(`${GAS_WEB_APP_URL}?action=getDutyRoster&token=${encodeURIComponent(API_TOKEN)}`);
             const res = await response.json();
-            if (res.status === 'success' && res.data.length > 0) {
+
+            if (res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
                 container.innerHTML = '';
                 res.data.forEach(person => {
                     const btn = document.createElement('button');
@@ -696,12 +696,23 @@
                 document.getElementById('toggle-roster-btn').classList.remove('hidden');
                 container.classList.remove('hidden');
                 document.getElementById('toggle-roster-btn').innerText = '🔼 收合名單';
-                addLog('系統','📥 已成功載入今日上班名冊');
+                addLog('系統', '📥 已成功載入今日上班名冊');
+
+            } else if (res.code === 'UNAUTHORIZED') {
+                container.innerHTML = '<span class="text-red-400 text-xs font-bold">⛔ Token 驗證失敗，請確認前端 API_TOKEN 與 GAS 設定一致。</span>';
+                addLog('系統錯誤', '⛔ 名冊載入失敗：Token 驗證錯誤');
+
+            } else if (res.status === 'success' && Array.isArray(res.data) && res.data.length === 0) {
+                container.innerHTML = '<span class="text-slate-500 text-xs">⚠️ 名冊分頁無資料，請確認試算表第一分頁 A、B 欄有填入單位與姓名。</span>';
+
             } else {
-                container.innerHTML = '<span class="text-slate-500 text-xs">第一分頁無資料，請確認試算表設定。</span>';
+                const msg = res.message || '未知錯誤';
+                container.innerHTML = `<span class="text-red-400 text-xs font-bold">❌ 載入失敗：${msg}</span>`;
+                addLog('系統錯誤', `❌ 名冊載入失敗：${msg}`);
             }
         } catch(e) {
-            container.innerHTML = '<span class="text-red-500 text-xs font-bold">網路連線失敗，請檢查網址或網路。</span>';
+            container.innerHTML = '<span class="text-red-500 text-xs font-bold">🔌 網路連線失敗，請檢查 GAS 網址或網路狀態。</span>';
+            addLog('系統錯誤', `🔌 名冊連線失敗：${e.message}`);
         }
     }
 
