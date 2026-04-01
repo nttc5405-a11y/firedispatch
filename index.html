@@ -96,8 +96,12 @@
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.85);
             z-index: 200;
-            display: flex; align-items: center; justify-content: center;
+            align-items: center; justify-content: center;
             padding: 1rem;
+        }
+        /* hidden 以外的狀態才套用 flex，避免蓋掉 Tailwind hidden（display:none） */
+        #custom-dialog-overlay:not(.hidden) {
+            display: flex;
         }
         #custom-dialog-box {
             background: #0f172a;
