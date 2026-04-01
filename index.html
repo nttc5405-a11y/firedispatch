@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>火場人員管制系統 - ICS 實戰版</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -22,29 +22,59 @@
             50% { border-color: #ffffff; box-shadow: 0 0 25px #3b82f6; background-color: rgba(59, 130, 246, 0.05); }
         }
 
-        .warning-red { animation: pulse-red 1.5s infinite; border-width: 4px !important; }
-        .warning-orange { animation: pulse-orange 2s infinite; border-width: 4px !important; }
-        .warning-blue { animation: pulse-blue 2s infinite; border-width: 4px !important; }
+        .warning-red    { animation: pulse-red    1.5s infinite; border-width: 4px !important; }
+        .warning-orange { animation: pulse-orange  2s  infinite; border-width: 4px !important; }
+        .warning-blue   { animation: pulse-blue    2s  infinite; border-width: 4px !important; }
 
-        body { background-color: #020617; color: #f8fafc; user-select: none; overflow-x: hidden; touch-action: manipulation; }
-        
-        select { 
-            background-color: #1e293b !important; color: #ffffff !important; border: 2px solid #3b82f6 !important; 
-            padding: 12px !important; font-size: 16px !important; font-weight: 900 !important;
-            border-radius: 12px; width: 100%; display: block; appearance: auto !important;
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            user-select: none;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        select {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            border: 2px solid #3b82f6 !important;
+            padding: 12px !important;
+            font-size: 16px !important;
+            font-weight: 900 !important;
+            border-radius: 12px;
+            width: 100%;
+            display: block;
+            appearance: auto !important;
         }
         optgroup { background-color: #0f172a; color: #60a5fa; font-style: normal; font-weight: 900; }
 
-        .sector-btn { transition: all 0.2s; min-height: 120px; border-radius: 1rem; border-width: 2px; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .bg-inside { background-color: #111827; border-color: #374151; }
-        .bg-outside { background-color: #064e3b; border-color: #065f46; }
-        .bg-rit { background-color: #450a0a; border-color: #991b1b; border-style: dashed; }
+        .sector-btn {
+            transition: all 0.2s;
+            min-height: 120px;
+            border-radius: 1rem;
+            border-width: 2px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .bg-inside   { background-color: #111827; border-color: #374151; }
+        .bg-outside  { background-color: #064e3b; border-color: #065f46; }
+        .bg-rit      { background-color: #450a0a; border-color: #991b1b; border-style: dashed; }
         .bg-basement { background-color: #1f2937; border-color: #4b5563; }
-        .bg-staging { background-color: #0f172a; border-color: #3b82f6; border-style: dashed; }
+        .bg-staging  { background-color: #0f172a; border-color: #3b82f6; border-style: dashed; }
 
-        .draggable-team { cursor: grab; padding: 6px; border-radius: 8px; background-color: rgba(0, 0, 0, 0.85); border: 1px solid rgba(255, 255, 255, 0.3); margin-bottom: 4px; }
+        .draggable-team {
+            cursor: grab;
+            padding: 6px;
+            border-radius: 8px;
+            background-color: rgba(0,0,0,0.85);
+            border: 1px solid rgba(255,255,255,0.3);
+            margin-bottom: 4px;
+        }
         .task-tag { padding: 2px 5px; border-radius: 4px; color: white; font-weight: 900; font-size: 10px; margin-right: 4px; }
-        
+
         .task-btn { transition: all 0.2s; opacity: 0.4; border-width: 2px; border-color: transparent; }
         .task-btn.active { opacity: 1 !important; border-color: white !important; transform: scale(1.05); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
 
@@ -53,13 +83,68 @@
         .task-幕 { background-color: #a855f7; } .task-RIT { background-color: #ff0000; border: 1px solid white; }
         .task-待 { background-color: #64748b; border: 1px dashed white; color: #fff; }
 
-        .grid-layout { display: grid; grid-template-columns: 90px 1fr 90px; gap: 12px; width: 100%; max-width: 850px; }
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 90px 1fr 90px;
+            gap: 12px;
+            width: 100%;
+            max-width: 850px;
+        }
+
+        /* ── 自訂 confirm/alert modal ── */
+        #custom-dialog-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            padding: 1rem;
+        }
+        #custom-dialog-box {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 2rem;
+            padding: 2rem;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
+        }
+
+        /* ── 新增人員 inline form ── */
+        #add-personnel-form input {
+            background-color: #1e293b;
+            color: #fff;
+            border: 2px solid #3b82f6;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            font-size: 16px;
+            font-weight: 700;
+            width: 100%;
+            outline: none;
+        }
+        #add-personnel-form input:focus { border-color: #60a5fa; }
     </style>
 </head>
 <body class="flex flex-col lg:flex-row h-screen" onclick="initAudioOnce()">
 
+    <!-- ════════════════════════════════════════════
+         自訂 Dialog（取代原生 alert / confirm / prompt）
+    ════════════════════════════════════════════ -->
+    <div id="custom-dialog-overlay" class="hidden" onclick="dialogBackdropClick(event)">
+        <div id="custom-dialog-box">
+            <p id="dialog-icon"  class="text-4xl mb-3 text-center"></p>
+            <h3 id="dialog-title" class="text-xl font-black text-white mb-2 text-center"></h3>
+            <p  id="dialog-msg"   class="text-slate-300 text-sm leading-relaxed mb-6 whitespace-pre-line text-center"></p>
+            <div id="dialog-input-wrap" class="hidden mb-4">
+                <input id="dialog-input" type="text" class="bg-slate-800 border border-slate-600 text-white rounded-xl px-4 py-3 w-full text-sm font-bold focus:outline-none focus:border-blue-500">
+            </div>
+            <div id="dialog-btns" class="flex gap-3 justify-center"></div>
+        </div>
+    </div>
+
+    <!-- ════ 左側主畫面 ════ -->
     <div class="flex-1 flex flex-col p-4 overflow-y-auto">
-        
+
+        <!-- 頂部 Header -->
         <div class="mb-4 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-black text-red-500 italic tracking-tighter flex items-center gap-3">
@@ -67,7 +152,7 @@
                     <span id="current-clock" class="bg-slate-800 px-3 py-1 rounded-lg text-white font-mono text-sm shadow-inner tracking-widest border border-slate-700">--:--:--</span>
                 </h1>
                 <p id="sync-status" class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-2 mt-1">● CHENGGONG FIRE UNIT CONNECTED</p>
-                
+
                 <div class="flex gap-2 mt-1 flex-wrap">
                     <div onclick="showPersonnelList('total')" class="cursor-pointer hover:bg-slate-800 active:scale-95 transition-all bg-slate-900 border border-blue-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
                         <span class="w-2 h-2 rounded-full bg-blue-500"></span>
@@ -83,36 +168,48 @@
                     </div>
                 </div>
             </div>
+
             <div class="flex gap-2">
                 <button onclick="toggleManual()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center border border-slate-700 shadow-lg">
                     <span class="text-blue-400 font-bold">？</span>
                 </button>
-                <button onclick="triggerMayday()" class="px-6 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-black shadow-lg shadow-red-600/50 active:scale-95 transition-all">🚨 MAYDAY</button>
+                <!-- FIX #1: MAYDAY 需長按 1.5 秒觸發 -->
+                <button
+                    id="mayday-btn"
+                    onpointerdown="startMaydayHold()"
+                    onpointerup="cancelMaydayHold()"
+                    onpointerleave="cancelMaydayHold()"
+                    class="px-6 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-black shadow-lg shadow-red-600/50 active:scale-95 transition-all select-none relative overflow-hidden">
+                    🚨 MAYDAY
+                    <span id="mayday-progress" class="absolute bottom-0 left-0 h-1 bg-white/60 w-0 transition-none rounded"></span>
+                </button>
             </div>
         </div>
 
+        <!-- 案件控制列 -->
         <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-700 mb-4 flex flex-col gap-3 shadow-md">
             <div class="flex gap-2 items-center flex-wrap justify-between">
                 <div class="flex gap-2 items-center flex-1 min-w-[200px]">
                     <span class="text-xs text-slate-400 font-bold whitespace-nowrap">案件編號</span>
-                    <input type="text" id="incident-id-input" placeholder="例: 032801 (將做為存檔分頁名)" onchange="updateSessionName()" class="bg-slate-950 border border-slate-600 px-3 py-1.5 rounded-lg text-blue-400 font-mono text-sm w-full font-black focus:outline-none focus:border-blue-500 shadow-inner placeholder-slate-700">
+                    <input type="text" id="incident-id-input"
+                           placeholder="例: 032801"
+                           onchange="updateSessionName()"
+                           class="bg-slate-950 border border-slate-600 px-3 py-1.5 rounded-lg text-blue-400 font-mono text-sm w-full font-black focus:outline-none focus:border-blue-500 shadow-inner placeholder-slate-700">
                 </div>
-               <div class="flex gap-2 flex-wrap">
+                <div class="flex gap-2 flex-wrap">
                     <button id="toggle-roster-btn" onclick="toggleRoster()" class="hidden bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all">
                         🔼 收合名單
                     </button>
-                    <button onclick="fetchDutyRoster()" class="bg-blue-700 hover:bg-blue-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all flex items-center gap-1">
+                    <button onclick="fetchDutyRoster()" class="bg-blue-700 hover:bg-blue-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all">
                         🔄 上班名冊
                     </button>
-                    <button onclick="startScanner()" class="bg-emerald-700 hover:bg-emerald-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all flex items-center gap-1">
+                    <button onclick="startScanner()" class="bg-emerald-700 hover:bg-emerald-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all">
                         📷 掃碼報到
                     </button>
-                    
-                    <button id="load-state-btn" onclick="fetchStateFromCloud()" class="bg-purple-700 hover:bg-purple-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all flex items-center gap-1">
+                    <button id="load-state-btn" onclick="fetchStateFromCloud(true)" class="bg-purple-700 hover:bg-purple-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all">
                         📥 載入現場狀況
                     </button>
-                    
-                    <button id="takeover-btn" onclick="takeoverCommand()" class="hidden bg-red-700 hover:bg-red-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all flex items-center gap-1">
+                    <button id="takeover-btn" onclick="takeoverCommand()" class="hidden bg-red-700 hover:bg-red-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all">
                         🔥 接管指揮
                     </button>
                 </div>
@@ -122,48 +219,49 @@
             </div>
         </div>
 
+        <!-- 建築設定列 -->
         <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-700 mb-4 flex flex-wrap gap-2 justify-between items-center shadow-md">
             <div class="flex gap-2 flex-wrap">
                 <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800">
                     <span class="text-[10px] text-slate-500 font-black mr-2">地上(F)</span>
-                    <button onclick="adjustFloors(-1)" class="text-slate-400 hover:text-white px-2 font-black">-</button>
-                    <span id="floor-display" class="font-mono text-sm font-black text-blue-400 w-4 text-center">1</span>
-                    <button onclick="adjustFloors(1)" class="text-slate-400 hover:text-white px-2 font-black">+</button>
+                    <button onclick="adjustFloors(-1)"  class="text-slate-400 hover:text-white px-2 font-black">-</button>
+                    <span id="floor-display"    class="font-mono text-sm font-black text-blue-400   w-4 text-center">1</span>
+                    <button onclick="adjustFloors(1)"   class="text-slate-400 hover:text-white px-2 font-black">+</button>
                 </div>
                 <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800">
                     <span class="text-[10px] text-slate-500 font-black mr-2">地下(B)</span>
                     <button onclick="adjustBasements(-1)" class="text-slate-400 hover:text-white px-2 font-black">-</button>
-                    <span id="basement-display" class="font-mono text-sm font-black text-purple-400 w-4 text-center">0</span>
-                    <button onclick="adjustBasements(1)" class="text-slate-400 hover:text-white px-2 font-black">+</button>
+                    <span id="basement-display" class="font-mono text-sm font-black text-purple-400  w-4 text-center">0</span>
+                    <button onclick="adjustBasements(1)"  class="text-slate-400 hover:text-white px-2 font-black">+</button>
                 </div>
                 <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800">
                     <span class="text-[10px] text-slate-500 font-black mr-2">棟數(U)</span>
                     <button onclick="adjustUnits(-1)" class="text-slate-400 hover:text-white px-2 font-black">-</button>
-                    <span id="unit-display" class="font-mono text-sm font-black text-emerald-400 w-4 text-center">1</span>
-                    <button onclick="adjustUnits(1)" class="text-slate-400 hover:text-white px-2 font-black">+</button>
+                    <span id="unit-display"     class="font-mono text-sm font-black text-emerald-400 w-4 text-center">1</span>
+                    <button onclick="adjustUnits(1)"  class="text-slate-400 hover:text-white px-2 font-black">+</button>
                 </div>
             </div>
-            
             <div id="cloud-sync-status" class="flex items-center gap-1.5 px-2 border-l border-slate-700">
                 <span class="w-2 h-2 rounded-full bg-slate-500 shrink-0" id="sync-dot"></span>
                 <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap" id="sync-text">尚未啟用同步</span>
             </div>
         </div>
 
+        <!-- 地圖主體 -->
         <div id="capture-area" class="flex-1 flex items-center justify-center p-2">
             <div class="grid-layout">
                 <div class="col-start-2"><div id="pos-back"></div></div>
-                <div class="row-start-2 flex items-center"><div id="pos-left" class="w-full"></div></div>
+                <div class="row-start-2 flex items-center"><div id="pos-left"    class="w-full"></div></div>
                 <div class="row-start-2 col-start-2 p-2 bg-slate-950/30 rounded-3xl border border-slate-800 shadow-inner overflow-hidden"><div id="pos-inside"></div></div>
-                <div class="row-start-2 col-start-3 flex items-center"><div id="pos-right" class="w-full"></div></div>
-                
-                <div class="col-start-1 row-start-3 mt-4 flex items-end"><div id="pos-rit" class="w-full"></div></div>
-                <div class="col-start-2 mt-4 row-start-3"><div id="pos-front"></div></div>
+                <div class="row-start-2 col-start-3 flex items-center"><div id="pos-right"   class="w-full"></div></div>
+                <div class="col-start-1 row-start-3 mt-4 flex items-end"><div id="pos-rit"     class="w-full"></div></div>
+                <div class="col-start-2       mt-4 row-start-3"><div id="pos-front"></div></div>
                 <div class="col-start-3 row-start-3 mt-4 flex items-end"><div id="pos-staging" class="w-full"></div></div>
             </div>
         </div>
     </div>
 
+    <!-- ════ 右側 Log 面板 ════ -->
     <div class="w-full lg:w-96 bg-slate-900 border-l border-slate-800 flex flex-col shadow-2xl">
         <details class="group lg:flex lg:flex-col lg:h-full" open>
             <summary class="flex justify-between items-center p-4 bg-slate-950 cursor-pointer list-none border-b border-slate-800 lg:cursor-default">
@@ -175,13 +273,14 @@
             <div class="flex flex-col h-[30vh] lg:h-[calc(100vh-130px)]">
                 <div id="status-board" class="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-[11px] leading-relaxed bg-slate-950/50"></div>
                 <div class="p-4 bg-slate-950 border-t border-slate-800 grid grid-cols-2 gap-2">
-                    <button onclick="exportLogs()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black border border-slate-700 transition-colors">匯出 CSV</button>
-                    <button onclick="captureScreen()" class="py-3 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-black border border-blue-600 transition-colors">戰術截圖</button>
+                    <button onclick="exportLogs()"    class="py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black border border-slate-700 transition-colors">匯出 CSV</button>
+                    <button onclick="captureScreen()" class="py-3 bg-blue-700  hover:bg-blue-600  text-white rounded-xl text-xs font-black border border-blue-600  transition-colors">戰術截圖</button>
                 </div>
             </div>
         </details>
     </div>
 
+    <!-- ════ 人員名單 Modal ════ -->
     <div id="personnel-modal" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden p-4 z-[70]">
         <div class="bg-slate-900 w-full max-w-md rounded-[2.5rem] border border-slate-700 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
             <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
@@ -189,12 +288,13 @@
                     <h3 id="personnel-modal-title" class="text-xl font-black text-white">名單</h3>
                     <p class="text-[10px] text-slate-500 uppercase">Personnel List</p>
                 </div>
-                <button onclick="closePersonnelList()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl hover:bg-slate-700 transition-colors">&times;</button>
+                <button onclick="closePersonnelList()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl hover:bg-slate-700">&times;</button>
             </div>
             <div id="personnel-modal-content" class="p-6 overflow-y-auto space-y-4"></div>
         </div>
     </div>
 
+    <!-- ════ 掃碼 Modal ════ -->
     <div id="scanner-modal" class="fixed inset-0 bg-black/95 z-[80] hidden flex flex-col items-center justify-center p-4">
         <h3 class="text-white font-black text-xl mb-4">📷 請掃描人員管制卡</h3>
         <div id="reader" class="w-full max-w-sm bg-black rounded-2xl overflow-hidden border-2 border-emerald-500 shadow-[0_0_20px_#10b981]"></div>
@@ -203,45 +303,58 @@
         <button onclick="stopScanner()" class="mt-8 px-8 py-3 bg-red-600 text-white font-black rounded-xl shadow-lg active:scale-95 transition-all">關閉相機</button>
     </div>
 
+    <!-- ════ 部署 Modal ════ -->
     <div id="modal" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden p-4 z-50">
         <div class="bg-slate-900 w-full max-w-md rounded-[2.5rem] border border-slate-700 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
             <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
                 <h3 class="text-xl font-black text-white" id="target-title">位置管理</h3>
                 <button onclick="closeModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl">&times;</button>
             </div>
-            
+
             <div class="p-6 overflow-y-auto space-y-6">
                 <div id="current-teams-list" class="space-y-4"></div>
                 <div class="pt-6 border-t border-slate-800 space-y-4">
                     <div class="bg-slate-950 p-5 rounded-3xl border border-slate-800 space-y-5">
-                        
+
                         <div class="flex justify-between items-center mb-1">
                             <label class="text-[10px] text-slate-500 font-black">單位與帶隊官</label>
-                            <button onclick="addCustomPersonnel()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-blue-400 px-3 py-1 rounded border border-slate-700 shadow transition-colors">➕ 臨時建置</button>
+                            <!-- FIX #4: 臨時建置改為 inline form，不再使用 prompt() -->
+                            <button onclick="toggleAddPersonnelForm()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-blue-400 px-3 py-1 rounded border border-slate-700 shadow transition-colors">➕ 臨時建置</button>
                         </div>
-                        
+
+                        <!-- FIX #4: 新增人員 inline form -->
+                        <div id="add-personnel-form" class="hidden space-y-2 p-3 bg-slate-900 rounded-xl border border-slate-700">
+                            <p class="text-[10px] text-slate-400 font-black">新增臨時人員</p>
+                            <input id="ap-unit" type="text" placeholder="隸屬單位（例：關山大隊）">
+                            <input id="ap-name" type="text" placeholder="人員姓名">
+                            <div class="flex gap-2">
+                                <button onclick="submitAddPersonnel()" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs font-black text-white">確認新增</button>
+                                <button onclick="toggleAddPersonnelForm()" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-black text-white">取消</button>
+                            </div>
+                        </div>
+
                         <div class="space-y-2 mt-0">
-                            <select id="unit-select" onchange="updateMemberOptions()" class="mb-2"></select>
+                            <select id="unit-select"   onchange="updateMemberOptions()" class="mb-2"></select>
                             <select id="leader-select" onchange="updateMemberOptions()"></select>
                         </div>
-                        
+
                         <div class="grid grid-cols-2 gap-3">
                             <select id="member-2-select" onchange="updateMemberOptions()"></select>
                             <select id="member-3-select" onchange="updateMemberOptions()"></select>
                             <select id="member-4-select" onchange="updateMemberOptions()"></select>
                         </div>
-                        
+
                         <div class="space-y-2">
                             <div class="flex flex-wrap gap-2 justify-center">
-                                <button onclick="setTask('滅火攻擊')" id="btn-滅" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-red-600 text-red-100">滅</button>
-                                <button onclick="setTask('人命搜救')" id="btn-搜" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-orange-600 text-orange-100">搜</button>
-                                <button onclick="setTask('通風排煙')" id="btn-排" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-cyan-600 text-cyan-100">排</button>
-                                <button onclick="setTask('周界防護')" id="btn-周" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-blue-600 text-blue-100">周</button>
+                                <button onclick="setTask('滅火攻擊')" id="btn-滅" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-red-600    text-red-100">滅</button>
+                                <button onclick="setTask('人命搜救')" id="btn-搜" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-orange-600  text-orange-100">搜</button>
+                                <button onclick="setTask('通風排煙')" id="btn-排" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-cyan-600    text-cyan-100">排</button>
+                                <button onclick="setTask('周界防護')" id="btn-周" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-blue-600    text-blue-100">周</button>
                                 <button onclick="setTask('侷限火勢')" id="btn-侷" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-emerald-600 text-emerald-100">侷</button>
-                                <button onclick="setTask('殘火處理')" id="btn-殘" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-amber-800 text-amber-100">殘</button>
-                                <button onclick="setTask('幕僚作業')" id="btn-幕" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-purple-600 text-purple-100">幕</button>
-                                <button onclick="setTask('RIT')" id="btn-RIT" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-red-900 text-red-200">RIT</button>
-                                <button onclick="setTask('待命集結')" id="btn-待" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-slate-600 text-slate-100">待命</button>
+                                <button onclick="setTask('殘火處理')" id="btn-殘" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-amber-800   text-amber-100">殘</button>
+                                <button onclick="setTask('幕僚作業')" id="btn-幕" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-purple-600  text-purple-100">幕</button>
+                                <button onclick="setTask('RIT')"      id="btn-RIT" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-red-900    text-red-200">RIT</button>
+                                <button onclick="setTask('待命集結')" id="btn-待" class="task-btn flex-1 min-w-[70px] py-3 rounded-xl text-[10px] font-black bg-slate-600   text-slate-100">待命</button>
                             </div>
                         </div>
 
@@ -255,9 +368,9 @@
                                 <span class="text-slate-500 uppercase">START PRESSURE</span>
                                 <span id="new-air-val" class="text-emerald-400 text-sm font-mono">250 bar</span>
                             </div>
-                            <input type="range" id="new-air-slider" min="0" max="300" step="10" value="250" 
+                            <input type="range" id="new-air-slider" min="0" max="300" step="10" value="250"
                                    ontouchstart="event.stopPropagation()" onmousedown="event.stopPropagation()"
-                                   oninput="document.getElementById('new-air-val').innerText=this.value+' bar'" 
+                                   oninput="document.getElementById('new-air-val').innerText=this.value+' bar'"
                                    class="w-full accent-blue-500">
                         </div>
                     </div>
@@ -267,6 +380,7 @@
         </div>
     </div>
 
+    <!-- ════ 操作手冊 Modal ════ -->
     <div id="manual-modal" class="fixed inset-0 bg-black/95 flex items-center justify-center hidden p-4 z-[60]">
         <div class="bg-slate-900 w-full max-w-2xl rounded-[2.5rem] border border-slate-700 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
             <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
@@ -274,27 +388,26 @@
                     <h3 class="text-xl font-black text-blue-400">📖 系統操作手冊</h3>
                     <p class="text-[10px] text-slate-500 uppercase">User Manual & SOP</p>
                 </div>
-                <button onclick="toggleManual()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl hover:bg-slate-700 transition-colors">&times;</button>
+                <button onclick="toggleManual()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl hover:bg-slate-700">&times;</button>
             </div>
-            
             <div class="p-8 overflow-y-auto space-y-6 text-sm leading-relaxed">
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
-                        <span class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">1</span> 
+                        <span class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">1</span>
                         數位報到與跨裝置同步
                     </h4>
                     <p class="text-slate-400 pl-8">點擊<b class="text-purple-400">「📥 載入現場狀況」</b>後，本機會切換為<b class="text-purple-400">「👁️唯讀觀看模式」</b>，並關閉本機警報與上傳功能，改為每 30 秒自動下載主指揮車的最新畫面。點擊<b class="text-blue-400">「🔄 載入上班名冊」</b>可自動撈取當日名單。亦支援<b class="text-emerald-400">「📷 掃碼報到」</b>快速錄入外援。</p>
                 </section>
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
-                        <span class="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center text-[10px]">2</span> 
+                        <span class="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center text-[10px]">2</span>
                         任務部署與拖曳變更
                     </h4>
                     <p class="text-slate-400 pl-8">點擊建築作業區開啟面板，指派帶隊官、任務與氣瓶起始壓力。欲變更位置時，直接<b>長按小組名牌進行拖曳 (Drag & Drop)</b>。若將人員拖曳回右下角<b class="text-slate-300">「待命區」</b>，系統將自動記錄撤出殘氣並解除管制。</p>
                 </section>
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
-                        <span class="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-[10px]">3</span> 
+                        <span class="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-[10px]">3</span>
                         氣瓶管制與警報提示
                     </h4>
                     <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
@@ -303,7 +416,13 @@
                         <li><b>緊急撤離：</b>氣壓低於 <b class="text-red-500">50 Bar</b> 時，觸發紅燈快閃與急促警示音。</li>
                     </ul>
                 </section>
-
+                <section class="space-y-2">
+                    <h4 class="text-white font-black flex items-center gap-2">
+                        <span class="w-6 h-6 bg-yellow-600 rounded-full flex items-center justify-center text-[10px]">4</span>
+                        MAYDAY 啟動方式
+                    </h4>
+                    <p class="text-slate-400 pl-8"><b class="text-red-400">長按「🚨 MAYDAY」按鈕 1.5 秒</b>以觸發警報，防止誤觸。</p>
+                </section>
                 <div class="pt-4 text-center">
                     <button onclick="toggleManual()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black border border-blue-500 shadow-lg active:scale-95 transition-all">我已充分了解</button>
                 </div>
@@ -311,690 +430,984 @@
         </div>
     </div>
 
+    <!-- ════════════════════════════════════════════
+         JavaScript
+    ════════════════════════════════════════════ -->
     <script>
-        // 🚨 記得把這裡替換成你的 Google Apps Script 網址！ 🚨
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwn-NK9Zl1CDHNbNZj5Wfh739ITCG-AmanrNuD837v3OHk724nBY1ivNaMiGMWvN8r3Ag/exec'; 
+    // ─────────────────────────────────────────────────
+    // 設定區（請依實際環境修改）
+    // ─────────────────────────────────────────────────
+    const GAS_WEB_APP_URL      = 'https://script.google.com/macros/s/AKfycbwn-NK9Zl1CDHNbNZj5Wfh739ITCG-AmanrNuD837v3OHk724nBY1ivNaMiGMWvN8r3Ag/exec';
+    const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT3K4j2T7zex1jjPzVPoWzf1HBflnE_nu2tzv9m_3BKJbovxgDAY5W9wea5RdWer8QXqEEDZEitCOGB/pub?output=csv';
 
-        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT3K4j2T7zex1jjPzVPoWzf1HBflnE_nu2tzv9m_3BKJbovxgDAY5W9wea5RdWer8QXqEEDZEitCOGB/pub?output=csv';
-        let personnelData = {}, floorCount = 1, basementCount = 0, unitCount = 1, selectedSector = null, selectedTask = '滅火攻擊', deployedTeams = [], logHistory = [];
-        let editingTeamUid = null; 
-        const CONSUMPTION_PER_MIN = 10;
-        const taskMap = { '滅火攻擊': '滅', '人命搜救': '搜', '通風排煙': '排', '周界防護': '周', '侷限火勢': '侷', '殘火處理': '殘', '幕僚作業': '幕', 'RIT': 'RIT', '待命集結': '待' };
+    // FIX #3: API 請求加上 token 驗證 header（GAS 端需同步驗證此 token）
+    const API_TOKEN = 'ICS_FIRE_2025';  // ← 請改為自訂密碼，GAS 端也要對應
 
-        // 🌟 觀看模式與定時器變數 🌟
-        let isReadOnly = false; 
-        let syncIntervalId;
+    // ─────────────────────────────────────────────────
+    // 全域狀態
+    // ─────────────────────────────────────────────────
+    let personnelData  = {};
+    let floorCount     = 1;
+    let basementCount  = 0;
+    let unitCount      = 1;
+    let selectedSector = null;
+    let selectedTask   = '滅火攻擊';
+    let deployedTeams  = [];
+    let logHistory     = [];
+    let editingTeamUid = null;
+    let isReadOnly     = false;
+    let syncIntervalId;
+    let lastSyncedLogIndex = 0;
+    let mapDirty       = true;   // FIX #2: 僅在狀態變更時重繪
+    let maydayTimer    = null;
+    let maydayInterval = null;
 
-        const d = new Date();
-        let SESSION_NAME = '火警_' + 
-            String(d.getMonth()+1).padStart(2, '0') + 
-            String(d.getDate()).padStart(2, '0') + '_' + 
-            String(d.getHours()).padStart(2, '0') + 
-            String(d.getMinutes()).padStart(2, '0');
-            
-        document.getElementById('incident-id-input').value = SESSION_NAME;
-
-        function updateSessionName() {
-            if (isReadOnly) {
-                alert("觀看模式下無法更改案件編號");
-                document.getElementById('incident-id-input').value = SESSION_NAME;
-                return;
-            }
-            const input = document.getElementById('incident-id-input').value.trim();
-            if (input) {
-                SESSION_NAME = input;
-                addLog("系統", `📝 案件編號設定為: ${SESSION_NAME}`);
-            }
-        }
-
-        let audioCtx;
-        function initAudioOnce() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const buffer = audioCtx.createBuffer(1, 1, 22050);
-                const source = audioCtx.createBufferSource();
-                source.buffer = buffer; source.connect(audioCtx.destination); source.start(0);
-            }
-            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        }
-
-        function playBeep(freq, type, duration, vol=0.1) {
-            try {
-                if (!audioCtx) return;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(); osc.stop(audioCtx.currentTime + duration);
-            } catch(e) {}
-        }
-
-        function playSound(type) {
-            if (!audioCtx) return;
-            if (type === 'sync') { playBeep(1200, 'sine', 0.1, 0.05); }
-            if (type === 'report') { playBeep(1000, 'sine', 0.2, 0.15); setTimeout(()=>playBeep(1000, 'sine', 0.2, 0.15), 300); }
-            if (type === 'warn') { playBeep(880, 'square', 0.2, 0.15); setTimeout(()=>playBeep(880, 'square', 0.2, 0.15), 300); }
-            if (type === 'danger') { playBeep(440, 'sawtooth', 0.5, 0.2); setTimeout(()=>playBeep(440, 'sawtooth', 0.5, 0.2), 600); }
-            if (type === 'mayday') { 
-                const interval = setInterval(() => { playBeep(1000, 'square', 0.4, 0.3); setTimeout(()=>playBeep(600, 'square', 0.4, 0.3), 500); }, 1000);
-                setTimeout(() => clearInterval(interval), 5000);
-            }
-        }
-
-        function speakName(name) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); 
-                const utterance = new SpeechSynthesisUtterance(name + " 報到");
-                utterance.lang = 'zh-TW'; utterance.rate = 1.2; utterance.volume = 1.0;   
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        function triggerMayday() {
-            if (isReadOnly) { alert("觀看模式下無法操作 MAYDAY"); return; }
-            initAudioOnce();
-            document.body.style.backgroundColor = document.body.style.backgroundColor === 'red' ? '#020617' : 'red';
-            addLog("MAYDAY", "🚩 啟動 MAYDAY！");
-            playSound('mayday');
-        }
-
-        async function loadPersonnel() {
-            try {
-                const res = await fetch(GOOGLE_SHEET_CSV_URL);
-                const text = await res.text();
-                personnelData = {};
-                text.split(/\r?\n/).slice(1).forEach(r => {
-                    const [u, n] = r.split(',');
-                    if (u && n) {
-                        const unitKey = u.trim();
-                        if (!personnelData[unitKey]) personnelData[unitKey] = [];
-                        personnelData[unitKey].push(n.trim());
-                    }
-                });
-            } catch (e) {
-                personnelData = { "成功分隊": ["賴君瑋", "鍾昌霖", "蕭易林", "林征利"] };
-            }
-            populateUnitSelect();
-        }
-
-        async function fetchDutyRoster() {
-            if (isReadOnly) { alert("觀看模式下無法載入名單"); return; }
-            initAudioOnce();
-            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') {
-                alert("請先在代碼中填入正確的 Google Apps Script 網址！"); return;
-            }
-            
-            const container = document.getElementById('roster-container');
-            container.innerHTML = '<span class="text-blue-400 text-xs font-bold animate-pulse">連線讀取中，請稍候...</span>';
-            
-            try {
-                const response = await fetch(GAS_WEB_APP_URL + "?action=getDutyRoster");
-                const res = await response.json();
-                
-                if (res.status === 'success' && res.data.length > 0) {
-                    container.innerHTML = '';
-                    res.data.forEach(person => {
-                        const btn = document.createElement('button');
-                        btn.className = "px-3 py-2 bg-slate-800 border border-slate-600 rounded-xl text-xs font-bold text-slate-300 hover:bg-blue-700 hover:text-white transition-all shadow-sm";
-                        btn.innerText = `${person.unit} - ${person.name}`;
-                        btn.onclick = () => quickCheckIn(person.unit, person.name, btn);
-                        container.appendChild(btn);
-                    });
-                    
-                    document.getElementById('toggle-roster-btn').classList.remove('hidden');
-                    container.classList.remove('hidden');
-                    document.getElementById('toggle-roster-btn').innerText = '🔼 收合名單';
-                    addLog("系統", "📥 已成功載入今日上班名冊");
-                } else {
-                    container.innerHTML = '<span class="text-slate-500 text-xs">第一分頁無資料，請確認試算表設定。</span>';
-                }
-            } catch (e) {
-                container.innerHTML = '<span class="text-red-500 text-xs font-bold">網路連線失敗，請檢查網址或網路。</span>';
-            }
-        }
-
-        function toggleRoster() {
-            const roster = document.getElementById('roster-container');
-            const btn = document.getElementById('toggle-roster-btn');
-            
-            if (roster.classList.contains('hidden')) {
-                roster.classList.remove('hidden');
-                btn.innerText = '🔼 收合名單';
-            } else {
-                roster.classList.add('hidden');
-                btn.innerText = '🔽 展開名單';
-            }
-        }
-
-        function quickCheckIn(unit, name, btnEl) {
-            if (isReadOnly) { alert("觀看模式下無法報到"); return; }
-            initAudioOnce();
-            if (!personnelData[unit]) personnelData[unit] = [];
-            if (!personnelData[unit].includes(name)) personnelData[unit].push(name);
-            populateUnitSelect();
-            
-            addLog("人員報到", `✅ [點名報到] ${unit} ${name}`);
-            playSound('sync'); speakName(name); 
-            
-            if (btnEl) {
-                btnEl.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-600', 'hover:bg-blue-700');
-                btnEl.classList.add('bg-emerald-600', 'text-white', 'border-emerald-500', 'opacity-50', 'cursor-not-allowed');
-                btnEl.onclick = null; 
-            }
-        }
-
-        let html5QrCode; let lastScannedData = ""; let lastScanTime = 0; let scanResultTimer; 
-
-        function startScanner() {
-            if (isReadOnly) { alert("觀看模式下無法使用掃碼功能"); return; }
-            initAudioOnce();
-            document.getElementById('scanner-modal').classList.remove('hidden');
-            document.getElementById('scan-result').innerText = ""; document.getElementById('scan-result').classList.add('opacity-0');
-            
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-                (decodedText) => {
-                    const now = Date.now();
-                    if (decodedText === lastScannedData && (now - lastScanTime) < 2000) return;
-                    
-                    lastScannedData = decodedText; lastScanTime = now;
-                    const data = decodedText.split(',');
-                    if (data.length >= 2) {
-                        const unit = data[0].trim(); const name = data[1].trim();
-                        if (!personnelData[unit]) personnelData[unit] = [];
-                        
-                        const resultEl = document.getElementById('scan-result');
-                        
-                        if (!personnelData[unit].includes(name)) {
-                            personnelData[unit].push(name); populateUnitSelect();
-                            addLog("人員報到", `✅ [掃碼成功] ${unit} ${name}`);
-                            playSound('sync'); speakName(name); 
-                            
-                            resultEl.innerText = `✅ 成功登錄：${name}`;
-                            resultEl.className = "text-emerald-400 font-black text-2xl mt-6 h-8 transition-opacity duration-300 tracking-widest drop-shadow-[0_0_10px_rgba(16,185,129,0.8)]";
-                        } else {
-                            addLog("系統提醒", `ℹ️ [重複報到] ${unit} ${name} 已在名單中`);
-                            resultEl.innerText = `⚠️ 重複掃描：${name}`;
-                            resultEl.className = "text-yellow-400 font-black text-2xl mt-6 h-8 transition-opacity duration-300 tracking-widest drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]";
-                        }
-                        
-                        clearTimeout(scanResultTimer);
-                        scanResultTimer = setTimeout(() => { resultEl.classList.add('opacity-0'); }, 2000);
-                    }
-                },
-                (errorMessage) => { }
-            ).catch(err => { alert("無法啟動相機，請確認已給予相機權限！"); stopScanner(); });
-        }
-
-        function stopScanner() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => { document.getElementById('scanner-modal').classList.add('hidden'); })
-                .catch(err => { document.getElementById('scanner-modal').classList.add('hidden'); });
-            } else { document.getElementById('scanner-modal').classList.add('hidden'); }
-        }
-
-        function addCustomPersonnel() {
-            const unitInput = prompt("請輸入該員隸屬單位 (例如: 關山大隊、支援人員):", "臨時支援"); if (!unitInput) return;
-            const nameInput = prompt("請輸入人員姓名:", ""); if (!nameInput) return;
-            const unit = unitInput.trim(); const name = nameInput.trim();
-            
-            if (!personnelData[unit]) personnelData[unit] = [];
-            if (!personnelData[unit].includes(name)) {
-                personnelData[unit].push(name); populateUnitSelect(); 
-                document.getElementById('unit-select').value = unit; updateMemberOptions();
-                addLog("系統建置", `📝 手動新增人員: [${unit}] ${name}`);
-            }
-        }
-
-        function populateUnitSelect() {
-            const select = document.getElementById('unit-select');
-            select.innerHTML = `<option value="ALL">-- 選擇單位 (全部) --</option>` + Object.keys(personnelData).map(u => `<option value="${u}">${u}</option>`).join('');
-            updateMemberOptions();
-        }
-
-        function updateMemberOptions() {
-            const unit = document.getElementById('unit-select').value;
-            const lS = document.getElementById('leader-select'); const m2S = document.getElementById('member-2-select');
-            const m3S = document.getElementById('member-3-select'); const m4S = document.getElementById('member-4-select'); 
-            
-            const currentSelectedInModal = [lS.value, m2S.value, m3S.value, m4S.value].filter(v => v !== "");
-            const globalDeployed = new Set(); 
-            deployedTeams.forEach(t => { if (t.uid !== editingTeamUid) { t.members.forEach(m => globalDeployed.add(m)); } });
-
-            let availablePersonnel = [];
-            if (unit === "ALL") { availablePersonnel = [].concat(...Object.values(personnelData)).filter(name => !globalDeployed.has(name) || currentSelectedInModal.includes(name)); } 
-            else { availablePersonnel = (personnelData[unit] || []).filter(name => !globalDeployed.has(name) || currentSelectedInModal.includes(name)); }
-
-            const render = (el, otherSelected) => {
-                let html = `<option value="">(點選名單)</option>`;
-                if (unit === "ALL") {
-                    for (let u in personnelData) {
-                        let availableInUnit = personnelData[u].filter(n => availablePersonnel.includes(n) && !otherSelected.includes(n));
-                        if (availableInUnit.length > 0) {
-                            html += `<optgroup label="[${u}]">`;
-                            html += availableInUnit.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
-                            html += `</optgroup>`;
-                        }
-                    }
-                } else {
-                    let finalOptions = availablePersonnel.filter(n => !otherSelected.includes(n));
-                    html += finalOptions.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
-                }
-                const prevVal = el.value; el.innerHTML = html; el.value = prevVal;
-            };
-
-            render(lS, [m2S.value, m3S.value, m4S.value]); render(m2S, [lS.value, m3S.value, m4S.value]);
-            render(m3S, [lS.value, m2S.value, m4S.value]); render(m4S, [lS.value, m2S.value, m3S.value]);
-        }
-
-        function getAirStatus(team) {
-            if (!team.usesAir) return "";
-            const elapsedMins = (Date.now() - team.startTime) / 60000;
-            const current = Math.max(0, team.initialAir - Math.floor(elapsedMins * CONSUMPTION_PER_MIN));
-            return ` (氣壓:${current}b)`;
-        }
-
-        function calculateAir(team) {
-            if (!team.usesAir) return 999;
-            const elapsedMins = (Date.now() - team.startTime) / 60000;
-            const current = Math.max(0, team.initialAir - Math.floor(elapsedMins * CONSUMPTION_PER_MIN));
-            
-            // 🌟 觀看模式：只算氣壓數字，不觸發任何警示燈、警報音或寫入新日誌 🌟
-            if (isReadOnly) return current;
-
-            if (elapsedMins >= 10 && !team.n10min) {
-                addLog("定期回報", `⏳ [${team.location}] ${team.members.join('、')} 已入室 10 分鐘，請回報氣量！`);
-                team.n10min = true;
-                team.needsReport = true; 
-                playSound('report');
-            }
-
-            if (current <= 100 && !team.n100) { 
-                addLog("氣量警告", `⚠️ [${team.location}] ${team.members.join('、')} 壓力低於 100b (目前:${current}b)`); 
-                team.n100 = true; playSound('warn'); 
-            }
-            if (current <= 50 && !team.n50) { 
-                addLog("緊急回撤", `🆘 [${team.location}] ${team.members.join('、')} 氣壓危急!`); 
-                team.n50 = true; playSound('danger'); 
-            }
-            return current;
-        }
-
-        function createBtn(name, isInside = true) {
-            const teams = deployedTeams.filter(t => t.location === name);
-            
-            let statusClass = 'border-slate-800';
-            
-            // 如果不是觀看模式，才去判斷要不要亮燈 (觀看模式下不亮本地推算的閃燈)
-            if (!isReadOnly) {
-                let air50 = teams.some(t => t.usesAir && calculateAir(t) <= 50);
-                let air100 = teams.some(t => t.usesAir && calculateAir(t) <= 100);
-                let needReport = teams.some(t => t.usesAir && t.needsReport);
-                statusClass = air50 ? 'warning-red' : (air100 ? 'warning-orange' : (needReport ? 'warning-blue' : 'border-slate-800'));
-            }
-
-            let bgColor = isInside ? (name.includes('B') ? 'bg-basement' : 'bg-inside') : 
-                          (name === "RIT救援區" ? 'bg-rit' : 
-                          (name === "待命區" ? 'bg-staging' : 'bg-outside'));
-
-            const btn = document.createElement('div');
-            btn.className = `sector-btn p-3 w-full ${bgColor} ${statusClass}`;
-            btn.onclick = (e) => { if(!e.target.closest('.draggable-team')) openModal(name); };
-            btn.setAttribute('ondragover', 'event.preventDefault()');
-            btn.setAttribute('ondrop', `handleDrop(event, '${name}')`);
-
-            let content = `<div class="w-full flex justify-between items-center mb-2"><span class="text-[10px] font-black opacity-40 uppercase">${name}</span></div>`;
-            teams.forEach(t => {
-                const air = calculateAir(t);
-                content += `<div class="draggable-team" draggable="${!isReadOnly}" ondragstart="event.dataTransfer.setData('uid', '${t.uid}')">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[12px] font-black text-white"><span class="task-tag task-${taskMap[t.task]}">${taskMap[t.task]}</span>${t.leader}</span>
-                        <span class="text-[15px] font-black font-mono ${t.usesAir?(air<=50?'text-red-500':'text-emerald-400'):'text-slate-500'}">${t.usesAir?air+'b':'---'}</span>
-                    </div>
-                </div>`;
-            });
-            btn.innerHTML = content + (teams.length? '': '<div class="text-[10px] opacity-10 mt-8 text-center w-full italic uppercase">STANDBY</div>');
-            return btn;
-        }
-
-        function openModal(name) {
-            if (isReadOnly) { alert("觀看模式下無法編輯人員狀態！"); return; }
-            selectedSector = name; document.getElementById('target-title').innerText = "位置管理：" + name; 
-            const list = document.getElementById('current-teams-list'); const teams = deployedTeams.filter(t => t.location === name);
-            
-            list.innerHTML = teams.map(t => {
-                const airVal = calculateAir(t);
-                return `
-                <div class="bg-slate-950 p-5 rounded-3xl border border-slate-700 shadow-xl space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="font-black text-white text-lg">${t.leader} 小組</span>
-                        <div class="flex gap-2">
-                            <button onclick="editTeam('${t.uid}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-black text-white">編輯/增減</button>
-                            <button onclick="removeTeam('${t.uid}')" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-black text-white">徹底撤離</button>
-                        </div>
-                    </div>
-                    <div class="text-[11px] text-slate-500 font-bold italic">隊員：${t.members.join('、')}</div>
-                    ${t.usesAir ? `
-                    <div class="space-y-3">
-                        <div class="flex justify-between text-[11px] font-black">
-                            <span class="text-blue-400">殘氣更新回報</span>
-                            <span id="update-air-val-${t.uid}" class="text-emerald-400 font-mono text-lg">${airVal} bar</span>
-                        </div>
-                        <input type="range" min="0" max="300" step="5" value="${airVal}" 
-                               ontouchstart="event.stopPropagation()" onmousedown="event.stopPropagation()"
-                               oninput="document.getElementById('update-air-val-${t.uid}').innerText = this.value + ' bar'"
-                               onchange="updateAir('${t.uid}', this.value)" 
-                               class="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
-                    </div>` : '<div class="text-center py-2 text-slate-600 text-[10px] font-black">此組目前未啟用氣瓶</div>'}
-                </div>`
-            }).join('');
-            
-            document.getElementById('leader-select').value = ""; document.getElementById('member-2-select').value = ""; document.getElementById('member-3-select').value = ""; document.getElementById('member-4-select').value = ""; 
-            if (name === "待命區") { setTask('待命集結'); } else if (name === "RIT救援區") { setTask('RIT'); } else { setTask('滅火攻擊'); }
-            updateMemberOptions(); document.getElementById('modal').classList.remove('hidden');
-        }
-
-        function editTeam(uid) {
-            const team = deployedTeams.find(t => t.uid === uid); if (!team) return; editingTeamUid = uid;
-            let unit = "ALL"; for (let u in personnelData) { if (personnelData[u].includes(team.leader)) { unit = u; break; } }
-            document.getElementById('unit-select').value = unit; updateMemberOptions(); 
-            document.getElementById('leader-select').value = team.members[0] || ""; document.getElementById('member-2-select').value = team.members[1] || ""; document.getElementById('member-3-select').value = team.members[2] || ""; document.getElementById('member-4-select').value = team.members[3] || "";
-            updateMemberOptions(); setTask(team.task); document.getElementById('air-toggle').checked = team.usesAir; toggleAirInput();
-            
-            if(team.usesAir) {
-                document.getElementById('new-air-slider').value = team.initialAir; document.getElementById('new-air-val').innerText = team.initialAir + ' bar';
-            }
-
-            const btn = document.getElementById('submit-btn');
-            if(btn) { btn.innerText = "UPDATE / 更新小組資訊"; btn.classList.replace('bg-blue-600', 'bg-orange-600'); btn.scrollIntoView({ behavior: 'smooth' }); }
-        }
-
-        function updateAir(uid, val) {
-            const team = deployedTeams.find(t => t.uid === uid);
-            if (team) {
-                team.initialAir = parseInt(val);
-                team.startTime = Date.now();
-                team.n100 = false; team.n50 = false; team.n10min = false; team.needsReport = false;
-                addLog("壓力更新", `📲 ${team.members.join('、')} 更新氣壓為 ${val}b`); renderMap(); closeModal();
-            }
-        }
-
-        function setTask(t) { 
-            selectedTask = t; 
-            document.querySelectorAll('.task-btn').forEach(b => { if (b.id === 'btn-' + taskMap[t]) { b.classList.add('active'); } else { b.classList.remove('active'); } });
-            const airToggle = document.getElementById('air-toggle');
-            if (['待命集結', '幕僚作業'].includes(t)) { airToggle.checked = false; } else { airToggle.checked = true; }
-            toggleAirInput();
-        }
-
-        function submitAssignment() {
-            initAudioOnce();
-            const l = document.getElementById('leader-select').value; if (!l) { alert('請選擇帶隊官!'); return; }
-            const ms = [l]; ["member-2-select", "member-3-select", "member-4-select"].forEach(id => { const v = document.getElementById(id).value; if(v) ms.push(v); });
-            const usesAir = document.getElementById('air-toggle').checked; const initAir = parseInt(document.getElementById('new-air-slider').value);
-
-            if (editingTeamUid) {
-                const team = deployedTeams.find(t => t.uid === editingTeamUid);
-                const oldMembers = team.members.join('、'); const oldAirStr = getAirStatus(team); 
-                team.leader = l; team.members = ms; team.task = selectedTask;
-                
-                let airLog = "";
-                if (team.usesAir !== usesAir) {
-                    team.usesAir = usesAir; airLog = usesAir ? ` (啟用氣瓶:${initAir}b)` : " (關閉氣瓶監控)";
-                    if (usesAir) { team.initialAir = initAir; team.startTime = Date.now(); team.n100 = false; team.n50 = false; team.n10min = false; team.needsReport = false; }
-                } else if (usesAir) {
-                    team.initialAir = initAir; team.startTime = Date.now(); team.n10min = false; team.needsReport = false; airLog = ` (氣壓重置為:${initAir}b)`;
-                }
-                
-                addLog("小組更新", `🔄 [${team.location}] ${oldMembers} ➔ ${ms.join('、')} (${selectedTask})${oldAirStr}${airLog}`); 
-                editingTeamUid = null; const btn = document.getElementById('submit-btn');
-                if(btn) { btn.innerText = "DEPLOY / 確定部署"; btn.classList.replace('bg-orange-600', 'bg-blue-600'); }
-                renderMap(); closeModal(); return;
-            }
-            
-            const uid = 't_' + Date.now();
-            deployedTeams.push({ 
-                uid, leader: l, members: ms, location: selectedSector, task: selectedTask, usesAir: usesAir, initialAir: initAir, 
-                startTime: Date.now(), n100: false, n50: false, n10min: false, needsReport: false 
-            });
-            
-            const airStr = usesAir ? ` (氣壓:${initAir}b)` : ""; addLog("管制指派", `🚀 [${selectedSector}] 指派：${ms.join('、')} (${selectedTask})${airStr}`); 
-            renderMap(); closeModal(); 
-        }
-
-        function addLog(action, msg) {
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-            logHistory.push({ time, action, msg });
-            const logEl = document.createElement('div'); logEl.className = "p-3 rounded-2xl bg-slate-800/50 border-l-4 border-blue-500 shadow-sm";
-            logEl.innerHTML = `<span class="text-blue-400 font-black text-[10px]">[${time}]</span> <span class="text-white font-black">${action}</span><br><span class="text-slate-400">${msg}</span>`;
-            document.getElementById('status-board').prepend(logEl);
-        }
-
-        function handleDrop(e, newLoc) {
-            e.preventDefault();
-            if (isReadOnly) { alert("觀看模式下無法移動人員！"); return; }
-            
-            const uid = e.dataTransfer.getData('uid'); const team = deployedTeams.find(t => t.uid === uid);
-            
-            if (team && team.location !== newLoc) {
-                const old = team.location; const airStr = getAirStatus(team); team.location = newLoc;
-                if (newLoc === "待命區") {
-                    team.task = "待命集結"; team.usesAir = false; team.needsReport = false; 
-                    addLog("安全撤出", `🔙 ${team.members.join('、')} 從 [${old}] 撤出至 [待命區]${airStr} (氣瓶解除)`);
-                } else if (newLoc === "RIT救援區") {
-                    team.task = "RIT"; addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]${airStr}`); 
-                } else { addLog("位置變更", `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]${airStr}`); }
-                renderMap();
-            }
-        }
-
-        function removeTeam(uid) {
-            const idx = deployedTeams.findIndex(t => t.uid === uid);
-            if (idx !== -1) { const team = deployedTeams[idx]; const airStr = getAirStatus(team); addLog("徹底收隊", `👋 ${team.members.join('、')} 已從現場移除${airStr}`); deployedTeams.splice(idx, 1); renderMap(); closeModal(); }
-        }
-
-        function renderMap() {
-            ['pos-front', 'pos-back', 'pos-left', 'pos-right', 'pos-inside', 'pos-rit', 'pos-staging'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = ''; });
-            document.getElementById('pos-front').appendChild(createBtn("第一面(前)", false)); document.getElementById('pos-back').appendChild(createBtn("第三面(後)", false));
-            document.getElementById('pos-left').appendChild(createBtn("第二面(左)", false)); document.getElementById('pos-right').appendChild(createBtn("第四面(右)", false));
-            if(document.getElementById('pos-rit')) document.getElementById('pos-rit').appendChild(createBtn("RIT救援區", false));
-            if(document.getElementById('pos-staging')) document.getElementById('pos-staging').appendChild(createBtn("待命區", false));
-
-            const inside = document.getElementById('pos-inside'); inside.style.display = 'grid'; inside.style.gridTemplateColumns = `repeat(${unitCount}, 1fr)`; inside.style.gap = '8px';
-            for (let f = floorCount; f >= 1; f--) { for (let u = 0; u < unitCount; u++) { const label = (unitCount > 1 ? String.fromCharCode(65 + u) + '棟 ' : '') + f + 'F'; inside.appendChild(createBtn(label)); } }
-            for (let b = 1; b <= basementCount; b++) { for (let u = 0; u < unitCount; u++) { const label = (unitCount > 1 ? String.fromCharCode(65 + u) + '棟 ' : '') + 'B' + b; inside.appendChild(createBtn(label)); } }
-
-            let totalOnScene = 0; let standbyCount = 0; let deployedCount = 0;
-            deployedTeams.forEach(t => { const count = t.members.length; totalOnScene += count; if (t.location === '待命區') { standbyCount += count; } else { deployedCount += count; } });
-            if(document.getElementById('stat-total')) document.getElementById('stat-total').innerText = totalOnScene;
-            if(document.getElementById('stat-standby')) document.getElementById('stat-standby').innerText = standbyCount;
-            if(document.getElementById('stat-deployed')) document.getElementById('stat-deployed').innerText = deployedCount;
-        }
-
-        function showPersonnelList(type) {
-            const modal = document.getElementById('personnel-modal'); const title = document.getElementById('personnel-modal-title'); const content = document.getElementById('personnel-modal-content');
-            let filteredTeams = [];
-            if (type === 'total') { title.innerText = "現場總人數名單"; title.className = "text-xl font-black text-blue-400"; filteredTeams = deployedTeams; } 
-            else if (type === 'standby') { title.innerText = "集結待命名單"; title.className = "text-xl font-black text-emerald-400"; filteredTeams = deployedTeams.filter(t => t.location === '待命區'); } 
-            else if (type === 'deployed') { title.innerText = "熱區部署名單"; title.className = "text-xl font-black text-red-400"; filteredTeams = deployedTeams.filter(t => t.location !== '待命區'); }
-            if (filteredTeams.length === 0) { content.innerHTML = '<p class="text-center text-slate-500 font-bold py-8">目前無人員紀錄</p>'; } 
-            else { content.innerHTML = filteredTeams.map(t => { const isStandby = t.location === '待命區'; return `<div class="bg-slate-800 p-4 rounded-2xl border ${isStandby ? 'border-emerald-500/30' : 'border-red-500/30'} shadow-lg mb-3"><div class="flex justify-between items-center mb-2"><span class="font-black text-white text-lg">${t.leader} 小組</span><span class="text-xs px-2 py-1 rounded bg-slate-900 font-bold ${isStandby ? 'text-emerald-400' : 'text-red-400'}">📍 ${t.location}</span></div><div class="text-[11px] text-slate-400 font-bold mb-1">任務：<span class="text-white">${t.task}</span></div><div class="text-[11px] text-slate-400 font-bold">隊員：<span class="text-slate-200">${t.members.join('、')}</span></div></div>`; }).join(''); }
-            modal.classList.remove('hidden');
-        }
-
-        function closePersonnelList() { document.getElementById('personnel-modal').classList.add('hidden'); }
-        function toggleAirInput() { document.getElementById('air-input-section').style.display = document.getElementById('air-toggle').checked ? 'block' : 'none'; }
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); editingTeamUid = null; const btn = document.getElementById('submit-btn'); if(btn && btn.classList.contains('bg-orange-600')) { btn.innerText = "DEPLOY / 確定部署"; btn.classList.replace('bg-orange-600', 'bg-blue-600'); } }
-        
-        function adjustFloors(d) { if(isReadOnly) return; floorCount = Math.max(1, Math.min(10, floorCount + d)); document.getElementById('floor-display').innerText = floorCount; renderMap(); }
-        function adjustBasements(d) { if(isReadOnly) return; basementCount = Math.max(0, Math.min(5, basementCount + d)); document.getElementById('basement-display').innerText = basementCount; renderMap(); }
-        function adjustUnits(d) { if(isReadOnly) return; unitCount = Math.max(1, Math.min(5, unitCount + d)); document.getElementById('unit-display').innerText = unitCount; renderMap(); }
-        function exportLogs() { let csv = "\uFEFF時間,動作,詳情\n"; logHistory.forEach(r => csv += `"${r.time}","${r.action}","${r.msg}"\n`); const blob = new Blob([csv], { type: 'text/csv' }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `FireLog_${Date.now()}.csv`; a.click(); }
-        async function captureScreen() { const canvas = await html2canvas(document.body, { backgroundColor: "#020617" }); const a = document.createElement("a"); a.href = canvas.toDataURL(); a.download = `TacticalBoard_${Date.now()}.png`; a.click(); }
-
-        setInterval(() => { const clock = document.getElementById('current-clock'); if (clock) clock.innerText = new Date().toLocaleTimeString([], {hour12: false}); renderMap(); }, 1000);
-        window.onload = () => { loadPersonnel(); setTask('待命集結'); renderMap(); };
-        function toggleManual() { document.getElementById('manual-modal').classList.toggle('hidden'); }
-
-        // ================= 雲端同步與下載快照 =================
-        let lastSyncedLogIndex = 0; 
-        async function syncToCloud() {
-            if (isReadOnly) return; // 🌟 觀看模式：不執行上傳 🌟
-            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') return;
-            
-            const logsToSync = logHistory.slice(lastSyncedLogIndex);
-            
-            const appState = JSON.stringify({
-                deployedTeams: deployedTeams,
-                floorCount: floorCount,
-                basementCount: basementCount,
-                unitCount: unitCount,
-                logHistory: logHistory 
-            });
-
-            const stats = { total: document.getElementById('stat-total').innerText, standby: document.getElementById('stat-standby').innerText, deployed: document.getElementById('stat-deployed').innerText };
-            
-            const payload = { 
-                sessionName: SESSION_NAME, 
-                logs: logsToSync.length > 0 ? logsToSync : null, 
-                stats: stats,
-                appState: appState 
-            };
-
-            document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
-            document.getElementById('sync-text').innerText = `同步中... (${SESSION_NAME})`;
-
-            try {
-                const response = await fetch(GAS_WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-                const result = await response.json();
-                
-                if(result.status === 'success') {
-                    if (logsToSync.length > 0) lastSyncedLogIndex += logsToSync.length; 
-                    document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
-                    document.getElementById('sync-text').innerText = `已同步 (${SESSION_NAME})`;
-                }
-            } catch (e) {
-                document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-red-500';
-                document.getElementById('sync-text').innerText = '同步失敗重試中';
-            }
-        }
-        
-        async function fetchStateFromCloud() {
-            // 🌟 1. 新增：防呆確認彈窗 🌟
-            if (!confirm("確定要從雲端載入現場狀況嗎？\n\n(注意：這將會覆蓋您目前的畫面，並自動進入「唯讀觀看模式」)")) {
-                return; // 如果按下取消，就直接終止動作
-            }
-
-            initAudioOnce();
-            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') {
-                alert("請先在代碼中填入正確的 Google Apps Script 網址！"); return;
-            }
-
-            const incidentId = document.getElementById('incident-id-input').value.trim();
-            if (!incidentId) { alert("請先輸入案件編號！"); return; }
-
-            // 首次點擊，切換為觀看模式
-            if (!isReadOnly) {
-                isReadOnly = true;
-                clearInterval(syncIntervalId); // 關閉自動上傳
-                syncIntervalId = setInterval(fetchStateFromCloud, 30000); // 改為每30秒自動下載
-                
-                // UI 變更提示
-                document.getElementById('sync-status').innerText = '👁️ VIEW-ONLY MODE (唯讀觀看模式)';
-                document.getElementById('sync-status').className = 'text-[10px] text-purple-400 font-bold uppercase tracking-widest mb-2 mt-1 animate-pulse';
-                
-                // 🌟 顯示接管指揮按鈕 🌟
-                document.getElementById('takeover-btn').classList.remove('hidden');
-            }
-
-            document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-purple-400 animate-pulse';
-            document.getElementById('sync-text').innerText = `正在下載 ${incidentId} 現場狀態...`;
-
-            try {
-                const response = await fetch(`${GAS_WEB_APP_URL}?action=getState&incidentId=${incidentId}`);
-                const result = await response.json();
-
-                if (result.status === 'success' && result.data) {
-                    const state = JSON.parse(result.data);
-                    
-                    deployedTeams = state.deployedTeams || [];
-                    floorCount = state.floorCount || 1;
-                    basementCount = state.basementCount || 0;
-                    unitCount = state.unitCount || 1;
-                    
-                    if (state.logHistory) {
-                        logHistory = state.logHistory;
-                        lastSyncedLogIndex = logHistory.length; 
-                        
-                        const board = document.getElementById('status-board');
-                        board.innerHTML = '';
-                        logHistory.forEach(log => {
-                            const logEl = document.createElement('div');
-                            logEl.className = "p-3 rounded-2xl bg-slate-800/50 border-l-4 border-blue-500 shadow-sm";
-                            logEl.innerHTML = `<span class="text-blue-400 font-black text-[10px]">[${log.time}]</span> <span class="text-white font-black">${log.action}</span><br><span class="text-slate-400">${log.msg}</span>`;
-                            board.prepend(logEl);
-                        });
-                    }
-
-                    document.getElementById('floor-display').innerText = floorCount;
-                    document.getElementById('basement-display').innerText = basementCount;
-                    document.getElementById('unit-display').innerText = unitCount;
-
-                    renderMap();
-                    if (event && event.type === 'click') { playSound('sync'); }
-                    
-                    document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
-                    document.getElementById('sync-text').innerText = `已同步主指揮車 (${incidentId})`;
-
-                } else {
-                    if (event && event.type === 'click') { alert(result.message || "找不到該案件的部署資料，請確認主控已上傳"); }
-                    document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-slate-500';
-                    document.getElementById('sync-text').innerText = '尚未同步';
-                }
-            } catch (e) {
-                if (event && event.type === 'click') { alert("下載失敗，請檢查網路連線"); }
-                document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-red-500';
-                document.getElementById('sync-text').innerText = '下載失敗';
-            }
-        }
-
-        // 🌟 2. 新增：接管指揮權功能 🌟
-        function takeoverCommand() {
-            if (!confirm("⚠️ 警告：確定要接管指揮權嗎？\n\n接管後，這台設備將成為「主控端」，您的操作會覆蓋雲端的紀錄。\n\n(請務必確認原指揮官的平板已經沒電、關閉或停止操作，以免發生指令衝突！)")) {
-                return;
-            }
-            
-            isReadOnly = false; // 解除觀看模式
-            clearInterval(syncIntervalId); // 停止每 30 秒下載
-            syncIntervalId = setInterval(syncToCloud, 30000); // 重新啟動每 30 秒上傳
-            
-            // 恢復 UI 狀態
-            document.getElementById('sync-status').innerText = '● CHENGGONG FIRE UNIT CONNECTED';
-            document.getElementById('sync-status').className = 'text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-2 mt-1';
-            
-            // 隱藏接管按鈕
-            document.getElementById('takeover-btn').classList.add('hidden');
-            
-            // 寫入日誌並重繪畫面 (解鎖拖曳功能)
-            addLog("指揮權轉移", "🔥 本機已接管指揮權，恢復人員拖曳與自動警報。");
-            renderMap();
-            playSound('sync');
-            
-            alert("✅ 已成功接管指揮權！\n氣壓警報與人員拖曳功能已解鎖。");
-        }
-
-        // 預設啟動：每 30 秒自動上傳 (主控模式)
-        syncIntervalId = setInterval(syncToCloud, 30000); 
-
-    </script>
-    <script>
-    document.addEventListener('contextmenu', event => event.preventDefault());
-    document.onkeydown = function(e) { 
-        if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85) || (e.ctrlKey && e.keyCode === 83)) return false; 
+    const CONSUMPTION_PER_MIN = 10;
+    const LOG_DISPLAY_LIMIT   = 100;  // FIX #8: Log DOM 上限
+    const taskMap = {
+        '滅火攻擊':'滅','人命搜救':'搜','通風排煙':'排','周界防護':'周',
+        '侷限火勢':'侷','殘火處理':'殘','幕僚作業':'幕','RIT':'RIT','待命集結':'待'
     };
-    document.addEventListener('selectstart', e => e.preventDefault());
+
+    // FIX #5: SESSION_NAME 加入裝置隨機尾碼，避免多裝置同分鐘衝突
+    const d = new Date();
+    const _rnd = Math.random().toString(36).slice(2,5).toUpperCase();
+    let SESSION_NAME = '火警_' +
+        String(d.getMonth()+1).padStart(2,'0') +
+        String(d.getDate()).padStart(2,'0') + '_' +
+        String(d.getHours()).padStart(2,'0') +
+        String(d.getMinutes()).padStart(2,'0') + '_' + _rnd;
+
+    document.getElementById('incident-id-input').value = SESSION_NAME;
+
+    // ─────────────────────────────────────────────────
+    // FIX #1: MAYDAY 長按觸發（1.5 秒）
+    // ─────────────────────────────────────────────────
+    function startMaydayHold() {
+        if (isReadOnly) { showDialog('alert','🚫','觀看模式','觀看模式下無法操作 MAYDAY'); return; }
+        initAudioOnce();
+        const btn  = document.getElementById('mayday-btn');
+        const prog = document.getElementById('mayday-progress');
+        prog.style.transition = 'width 1.5s linear';
+        prog.style.width = '100%';
+
+        maydayTimer = setTimeout(() => {
+            triggerMaydayReal();
+            prog.style.transition = 'none';
+            prog.style.width = '0';
+        }, 1500);
+    }
+
+    function cancelMaydayHold() {
+        clearTimeout(maydayTimer);
+        const prog = document.getElementById('mayday-progress');
+        prog.style.transition = 'none';
+        prog.style.width = '0';
+    }
+
+    function triggerMaydayReal() {
+        document.body.style.backgroundColor =
+            document.body.style.backgroundColor === 'red' ? '#020617' : 'red';
+        addLog('MAYDAY', '🚩 啟動 MAYDAY！');
+        playSound('mayday');
+        markDirty();
+    }
+
+    // ─────────────────────────────────────────────────
+    // FIX #2: 拆分時鐘 / 地圖刷新，減少 DOM 重建頻率
+    // ─────────────────────────────────────────────────
+    function markDirty() { mapDirty = true; }
+
+    setInterval(() => {
+        const clock = document.getElementById('current-clock');
+        if (clock) clock.innerText = new Date().toLocaleTimeString([], {hour12:false});
+    }, 1000);
+
+    setInterval(() => {
+        if (mapDirty) { renderMap(); mapDirty = false; }
+    }, 2000);
+
+    // 氣瓶狀態每分鐘檢查一次（不需每秒）
+    setInterval(() => { checkAllAirAlerts(); }, 60000);
+
+    // ─────────────────────────────────────────────────
+    // 自訂 Dialog（FIX #4 的基礎，取代 alert/confirm/prompt）
+    // ─────────────────────────────────────────────────
+    let _dialogResolve = null;
+
+    function showDialog(type, icon, title, msg, inputDefault = '') {
+        return new Promise(resolve => {
+            _dialogResolve = resolve;
+            document.getElementById('dialog-icon').innerText  = icon;
+            document.getElementById('dialog-title').innerText = title;
+            document.getElementById('dialog-msg').innerText   = msg;
+
+            const inputWrap = document.getElementById('dialog-input-wrap');
+            const inputEl   = document.getElementById('dialog-input');
+            const btnsEl    = document.getElementById('dialog-btns');
+
+            if (type === 'prompt') {
+                inputWrap.classList.remove('hidden');
+                inputEl.value = inputDefault;
+                setTimeout(() => inputEl.focus(), 100);
+            } else {
+                inputWrap.classList.add('hidden');
+            }
+
+            btnsEl.innerHTML = '';
+            if (type === 'alert') {
+                btnsEl.innerHTML = `<button onclick="closeDialog('ok')" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black">確定</button>`;
+            } else if (type === 'confirm') {
+                btnsEl.innerHTML = `
+                    <button onclick="closeDialog(false)" class="flex-1 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-black">取消</button>
+                    <button onclick="closeDialog(true)"  class="flex-1 py-3 bg-blue-600  hover:bg-blue-500  text-white rounded-xl font-black">確定</button>`;
+            } else if (type === 'prompt') {
+                btnsEl.innerHTML = `
+                    <button onclick="closeDialog(null)"  class="flex-1 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-black">取消</button>
+                    <button onclick="closeDialog('input')" class="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black">確認</button>`;
+            }
+
+            document.getElementById('custom-dialog-overlay').classList.remove('hidden');
+        });
+    }
+
+    function closeDialog(val) {
+        const overlay = document.getElementById('custom-dialog-overlay');
+        overlay.classList.add('hidden');
+        if (!_dialogResolve) return;
+        if (val === 'input') {
+            _dialogResolve(document.getElementById('dialog-input').value.trim() || null);
+        } else {
+            _dialogResolve(val);
+        }
+        _dialogResolve = null;
+    }
+
+    function dialogBackdropClick(e) {
+        if (e.target === document.getElementById('custom-dialog-overlay')) {
+            closeDialog(false);
+        }
+    }
+
+    // ─────────────────────────────────────────────────
+    // Audio
+    // ─────────────────────────────────────────────────
+    let audioCtx;
+    function initAudioOnce() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const buf = audioCtx.createBuffer(1,1,22050);
+            const src = audioCtx.createBufferSource();
+            src.buffer = buf; src.connect(audioCtx.destination); src.start(0);
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playBeep(freq, type, duration, vol=0.1) {
+        try {
+            if (!audioCtx) return;
+            const osc  = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    function playSound(type) {
+        if (!audioCtx) return;
+        if (type === 'sync')   { playBeep(1200,'sine',0.1,0.05); }
+        if (type === 'report') { playBeep(1000,'sine',0.2,0.15); setTimeout(()=>playBeep(1000,'sine',0.2,0.15),300); }
+        if (type === 'warn')   { playBeep(880,'square',0.2,0.15); setTimeout(()=>playBeep(880,'square',0.2,0.15),300); }
+        if (type === 'danger') { playBeep(440,'sawtooth',0.5,0.2); setTimeout(()=>playBeep(440,'sawtooth',0.5,0.2),600); }
+        if (type === 'mayday') {
+            const iv = setInterval(()=>{ playBeep(1000,'square',0.4,0.3); setTimeout(()=>playBeep(600,'square',0.4,0.3),500); }, 1000);
+            setTimeout(()=>clearInterval(iv), 5000);
+        }
+    }
+
+    function speakName(name) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(name + ' 報到');
+            u.lang='zh-TW'; u.rate=1.2; u.volume=1.0;
+            window.speechSynthesis.speak(u);
+        }
+    }
+
+    // ─────────────────────────────────────────────────
+    // 案件編號
+    // ─────────────────────────────────────────────────
+    function updateSessionName() {
+        if (isReadOnly) {
+            showDialog('alert','🚫','唯讀模式','觀看模式下無法更改案件編號');
+            document.getElementById('incident-id-input').value = SESSION_NAME;
+            return;
+        }
+        const input = document.getElementById('incident-id-input').value.trim();
+        if (input) { SESSION_NAME = input; addLog('系統',`📝 案件編號設定為: ${SESSION_NAME}`); }
+    }
+
+    // ─────────────────────────────────────────────────
+    // 人員名冊
+    // ─────────────────────────────────────────────────
+    async function loadPersonnel() {
+        try {
+            const res = await fetch(GOOGLE_SHEET_CSV_URL);
+            const text = await res.text();
+            personnelData = {};
+            text.split(/\r?\n/).slice(1).forEach(r => {
+                const [u,n] = r.split(',');
+                if (u && n) {
+                    const k = u.trim();
+                    if (!personnelData[k]) personnelData[k] = [];
+                    personnelData[k].push(n.trim());
+                }
+            });
+        } catch(e) {
+            personnelData = { "成功分隊": ["賴君瑋","鍾昌霖","蕭易林","林征利"] };
+        }
+        populateUnitSelect();
+    }
+
+    async function fetchDutyRoster() {
+        if (isReadOnly) { showDialog('alert','🚫','唯讀模式','觀看模式下無法載入名單'); return; }
+        initAudioOnce();
+        if (!GAS_WEB_APP_URL) { showDialog('alert','⚠️','設定錯誤','請先填入 GAS 網址'); return; }
+
+        const container = document.getElementById('roster-container');
+        container.innerHTML = '<span class="text-blue-400 text-xs font-bold animate-pulse">連線讀取中，請稍候...</span>';
+
+        try {
+            // FIX #3: GAS 無法讀取自訂 Header，改由 URL 參數傳遞 token
+            const response = await fetch(`${GAS_WEB_APP_URL}?action=getDutyRoster&token=${encodeURIComponent(API_TOKEN)}`);
+            const res = await response.json();
+            if (res.status === 'success' && res.data.length > 0) {
+                container.innerHTML = '';
+                res.data.forEach(person => {
+                    const btn = document.createElement('button');
+                    btn.className = 'px-3 py-2 bg-slate-800 border border-slate-600 rounded-xl text-xs font-bold text-slate-300 hover:bg-blue-700 hover:text-white transition-all shadow-sm';
+                    btn.innerText = `${person.unit} - ${person.name}`;
+                    btn.onclick   = () => quickCheckIn(person.unit, person.name, btn);
+                    container.appendChild(btn);
+                });
+                document.getElementById('toggle-roster-btn').classList.remove('hidden');
+                container.classList.remove('hidden');
+                document.getElementById('toggle-roster-btn').innerText = '🔼 收合名單';
+                addLog('系統','📥 已成功載入今日上班名冊');
+            } else {
+                container.innerHTML = '<span class="text-slate-500 text-xs">第一分頁無資料，請確認試算表設定。</span>';
+            }
+        } catch(e) {
+            container.innerHTML = '<span class="text-red-500 text-xs font-bold">網路連線失敗，請檢查網址或網路。</span>';
+        }
+    }
+
+    function toggleRoster() {
+        const roster = document.getElementById('roster-container');
+        const btn    = document.getElementById('toggle-roster-btn');
+        if (roster.classList.contains('hidden')) {
+            roster.classList.remove('hidden'); btn.innerText = '🔼 收合名單';
+        } else {
+            roster.classList.add('hidden');    btn.innerText = '🔽 展開名單';
+        }
+    }
+
+    function quickCheckIn(unit, name, btnEl) {
+        if (isReadOnly) { showDialog('alert','🚫','唯讀模式','觀看模式下無法報到'); return; }
+        initAudioOnce();
+        if (!personnelData[unit]) personnelData[unit] = [];
+        if (!personnelData[unit].includes(name)) personnelData[unit].push(name);
+        populateUnitSelect();
+        addLog('人員報到', `✅ [點名報到] ${unit} ${name}`);
+        playSound('sync'); speakName(name);
+        if (btnEl) {
+            btnEl.classList.replace('bg-slate-800','bg-emerald-600');
+            btnEl.classList.replace('text-slate-300','text-white');
+            btnEl.classList.add('opacity-50','cursor-not-allowed');
+            btnEl.onclick = null;
+        }
+        markDirty();
+    }
+
+    // ─────────────────────────────────────────────────
+    // FIX #4: 臨時建置 inline form（取代 prompt）
+    // ─────────────────────────────────────────────────
+    function toggleAddPersonnelForm() {
+        const form = document.getElementById('add-personnel-form');
+        form.classList.toggle('hidden');
+        if (!form.classList.contains('hidden')) {
+            document.getElementById('ap-unit').value = '';
+            document.getElementById('ap-name').value = '';
+            document.getElementById('ap-unit').focus();
+        }
+    }
+
+    function submitAddPersonnel() {
+        const unit = document.getElementById('ap-unit').value.trim();
+        const name = document.getElementById('ap-name').value.trim();
+        if (!unit || !name) {
+            showDialog('alert','⚠️','欄位空白','請輸入單位名稱與人員姓名');
+            return;
+        }
+        if (!personnelData[unit]) personnelData[unit] = [];
+        if (!personnelData[unit].includes(name)) {
+            personnelData[unit].push(name);
+            populateUnitSelect();
+            document.getElementById('unit-select').value = unit;
+            updateMemberOptions();
+            addLog('系統建置', `📝 手動新增人員: [${unit}] ${name}`);
+        }
+        toggleAddPersonnelForm();
+        markDirty();
+    }
+
+    // ─────────────────────────────────────────────────
+    // QR 掃碼
+    // ─────────────────────────────────────────────────
+    let html5QrCode, lastScannedData = '', lastScanTime = 0, scanResultTimer;
+
+    function startScanner() {
+        if (isReadOnly) { showDialog('alert','🚫','唯讀模式','觀看模式下無法使用掃碼功能'); return; }
+        initAudioOnce();
+        document.getElementById('scanner-modal').classList.remove('hidden');
+        document.getElementById('scan-result').innerText = '';
+        document.getElementById('scan-result').classList.add('opacity-0');
+
+        html5QrCode = new Html5Qrcode('reader');
+        html5QrCode.start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: 250 },
+            (decodedText) => {
+                const now = Date.now();
+                if (decodedText === lastScannedData && (now - lastScanTime) < 2000) return;
+                lastScannedData = decodedText; lastScanTime = now;
+                const data = decodedText.split(',');
+                if (data.length >= 2) {
+                    const unit = data[0].trim(); const name = data[1].trim();
+                    if (!personnelData[unit]) personnelData[unit] = [];
+                    const resultEl = document.getElementById('scan-result');
+                    if (!personnelData[unit].includes(name)) {
+                        personnelData[unit].push(name); populateUnitSelect();
+                        addLog('人員報到', `✅ [掃碼成功] ${unit} ${name}`);
+                        playSound('sync'); speakName(name);
+                        resultEl.innerText   = `✅ 成功登錄：${name}`;
+                        resultEl.className   = 'text-emerald-400 font-black text-2xl mt-6 h-8 transition-opacity duration-300 tracking-widest drop-shadow-[0_0_10px_rgba(16,185,129,0.8)]';
+                    } else {
+                        addLog('系統提醒', `ℹ️ [重複報到] ${unit} ${name} 已在名單中`);
+                        resultEl.innerText = `⚠️ 重複掃描：${name}`;
+                        resultEl.className = 'text-yellow-400 font-black text-2xl mt-6 h-8 transition-opacity duration-300 tracking-widest drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]';
+                    }
+                    clearTimeout(scanResultTimer);
+                    scanResultTimer = setTimeout(() => resultEl.classList.add('opacity-0'), 2000);
+                    markDirty();
+                }
+            },
+            () => {}
+        ).catch(() => {
+            showDialog('alert','📷','相機錯誤','無法啟動相機，請確認已給予相機權限！');
+            stopScanner();
+        });
+    }
+
+    function stopScanner() {
+        if (html5QrCode) {
+            html5QrCode.stop()
+                .then(()   => document.getElementById('scanner-modal').classList.add('hidden'))
+                .catch(()  => document.getElementById('scanner-modal').classList.add('hidden'));
+        } else { document.getElementById('scanner-modal').classList.add('hidden'); }
+    }
+
+    // ─────────────────────────────────────────────────
+    // 人員選單
+    // ─────────────────────────────────────────────────
+    function populateUnitSelect() {
+        const select = document.getElementById('unit-select');
+        select.innerHTML = `<option value="ALL">-- 選擇單位 (全部) --</option>` +
+            Object.keys(personnelData).map(u => `<option value="${u}">${u}</option>`).join('');
+        updateMemberOptions();
+    }
+
+    function updateMemberOptions() {
+        const unit = document.getElementById('unit-select').value;
+        const lS = document.getElementById('leader-select');
+        const m2S = document.getElementById('member-2-select');
+        const m3S = document.getElementById('member-3-select');
+        const m4S = document.getElementById('member-4-select');
+
+        const currentSelectedInModal = [lS.value, m2S.value, m3S.value, m4S.value].filter(v => v !== '');
+        const globalDeployed = new Set();
+        deployedTeams.forEach(t => { if (t.uid !== editingTeamUid) t.members.forEach(m => globalDeployed.add(m)); });
+
+        let available = [];
+        if (unit === 'ALL') { available = [].concat(...Object.values(personnelData)).filter(n => !globalDeployed.has(n) || currentSelectedInModal.includes(n)); }
+        else { available = (personnelData[unit] || []).filter(n => !globalDeployed.has(n) || currentSelectedInModal.includes(n)); }
+
+        const render = (el, otherSelected) => {
+            let html = `<option value="">(點選名單)</option>`;
+            if (unit === 'ALL') {
+                for (let u in personnelData) {
+                    let av = personnelData[u].filter(n => available.includes(n) && !otherSelected.includes(n));
+                    if (av.length > 0) {
+                        html += `<optgroup label="[${u}]">` +
+                            av.map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('') +
+                            '</optgroup>';
+                    }
+                }
+            } else {
+                html += available.filter(n => !otherSelected.includes(n))
+                    .map(n => `<option value="${n}">${el.id==='leader-select'?'⭐ ':''}${n}</option>`).join('');
+            }
+            const prev = el.value; el.innerHTML = html; el.value = prev;
+        };
+        render(lS,  [m2S.value, m3S.value, m4S.value]);
+        render(m2S, [lS.value,  m3S.value, m4S.value]);
+        render(m3S, [lS.value,  m2S.value, m4S.value]);
+        render(m4S, [lS.value,  m2S.value, m3S.value]);
+    }
+
+    // ─────────────────────────────────────────────────
+    // FIX #2 / FIX #6: 氣瓶計算（分離推算與警報）
+    // ─────────────────────────────────────────────────
+    function calcAirCurrent(team) {
+        if (!team.usesAir) return 999;
+        const elapsed = (Date.now() - team.startTime) / 60000;
+        return Math.max(0, team.initialAir - Math.floor(elapsed * CONSUMPTION_PER_MIN));
+    }
+
+    // FIX #6: 觀看端不用本地 startTime 推算，直接用雲端快照氣壓
+    function getDisplayAir(team) {
+        if (!team.usesAir) return null;
+        if (isReadOnly && team.snapshotAir !== undefined) return team.snapshotAir;
+        return calcAirCurrent(team);
+    }
+
+    function checkAllAirAlerts() {
+        if (isReadOnly) return;
+        deployedTeams.forEach(t => {
+            if (!t.usesAir) return;
+            const elapsed = (Date.now() - t.startTime) / 60000;
+            const current = calcAirCurrent(t);
+            if (elapsed >= 10 && !t.n10min) {
+                addLog('定期回報', `⏳ [${t.location}] ${t.members.join('、')} 已入室 10 分鐘，請回報氣量！`);
+                t.n10min = true; t.needsReport = true; playSound('report');
+            }
+            if (current <= 100 && !t.n100) {
+                addLog('氣量警告', `⚠️ [${t.location}] ${t.members.join('、')} 壓力低於 100b (目前:${current}b)`);
+                t.n100 = true; playSound('warn');
+            }
+            if (current <= 50 && !t.n50) {
+                addLog('緊急回撤', `🆘 [${t.location}] ${t.members.join('、')} 氣壓危急!`);
+                t.n50 = true; playSound('danger');
+            }
+        });
+        markDirty();
+    }
+
+    function getAirStatusText(team) {
+        if (!team.usesAir) return '';
+        const v = getDisplayAir(team);
+        return ` (氣壓:${v}b)`;
+    }
+
+    // ─────────────────────────────────────────────────
+    // 地圖渲染
+    // ─────────────────────────────────────────────────
+    function createBtn(name, isInside=true) {
+        const teams = deployedTeams.filter(t => t.location === name);
+        let statusClass = 'border-slate-800';
+        if (!isReadOnly) {
+            const air50     = teams.some(t => t.usesAir && calcAirCurrent(t) <= 50);
+            const air100    = teams.some(t => t.usesAir && calcAirCurrent(t) <= 100);
+            const needRep   = teams.some(t => t.usesAir && t.needsReport);
+            statusClass = air50 ? 'warning-red' : (air100 ? 'warning-orange' : (needRep ? 'warning-blue' : 'border-slate-800'));
+        }
+        let bgColor = isInside
+            ? (name.includes('B') ? 'bg-basement' : 'bg-inside')
+            : (name === 'RIT救援區' ? 'bg-rit' : (name === '待命區' ? 'bg-staging' : 'bg-outside'));
+
+        const btn = document.createElement('div');
+        btn.className = `sector-btn p-3 w-full ${bgColor} ${statusClass}`;
+        btn.onclick   = (e) => { if (!e.target.closest('.draggable-team')) openModal(name); };
+        btn.setAttribute('ondragover', 'event.preventDefault()');
+        btn.setAttribute('ondrop', `handleDrop(event,'${name}')`);
+
+        let content = `<div class="w-full flex justify-between items-center mb-2"><span class="text-[10px] font-black opacity-40 uppercase">${name}</span></div>`;
+        teams.forEach(t => {
+            const air = getDisplayAir(t);
+            const airStr = air !== null ? air + 'b' : '---';
+            const airColor = air !== null ? (air <= 50 ? 'text-red-500' : 'text-emerald-400') : 'text-slate-500';
+            content += `<div class="draggable-team" draggable="${!isReadOnly}" ondragstart="event.dataTransfer.setData('uid','${t.uid}')">
+                <div class="flex items-center justify-between">
+                    <span class="text-[12px] font-black text-white"><span class="task-tag task-${taskMap[t.task]}">${taskMap[t.task]}</span>${t.leader}</span>
+                    <span class="text-[15px] font-black font-mono ${airColor}">${airStr}</span>
+                </div>
+            </div>`;
+        });
+        btn.innerHTML = content + (teams.length ? '' : '<div class="text-[10px] opacity-10 mt-8 text-center w-full italic uppercase">STANDBY</div>');
+        return btn;
+    }
+
+    function renderMap() {
+        ['pos-front','pos-back','pos-left','pos-right','pos-inside','pos-rit','pos-staging'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '';
+        });
+        document.getElementById('pos-front').appendChild(createBtn('第一面(前)', false));
+        document.getElementById('pos-back').appendChild(createBtn('第三面(後)', false));
+        document.getElementById('pos-left').appendChild(createBtn('第二面(左)', false));
+        document.getElementById('pos-right').appendChild(createBtn('第四面(右)', false));
+        document.getElementById('pos-rit').appendChild(createBtn('RIT救援區', false));
+        document.getElementById('pos-staging').appendChild(createBtn('待命區', false));
+
+        const inside = document.getElementById('pos-inside');
+        inside.style.display             = 'grid';
+        inside.style.gridTemplateColumns = `repeat(${unitCount}, 1fr)`;
+        inside.style.gap                 = '8px';
+        for (let f = floorCount; f >= 1; f--) {
+            for (let u = 0; u < unitCount; u++) {
+                inside.appendChild(createBtn((unitCount>1 ? String.fromCharCode(65+u)+'棟 ' : '') + f + 'F'));
+            }
+        }
+        for (let b = 1; b <= basementCount; b++) {
+            for (let u = 0; u < unitCount; u++) {
+                inside.appendChild(createBtn((unitCount>1 ? String.fromCharCode(65+u)+'棟 ' : '') + 'B' + b));
+            }
+        }
+
+        let total=0, standby=0, deployed=0;
+        deployedTeams.forEach(t => {
+            total   += t.members.length;
+            if (t.location === '待命區') standby  += t.members.length;
+            else                          deployed += t.members.length;
+        });
+        document.getElementById('stat-total').innerText    = total;
+        document.getElementById('stat-standby').innerText  = standby;
+        document.getElementById('stat-deployed').innerText = deployed;
+    }
+
+    // ─────────────────────────────────────────────────
+    // 部署 Modal
+    // ─────────────────────────────────────────────────
+    function openModal(name) {
+        if (isReadOnly) { showDialog('alert','👁️','唯讀模式','觀看模式下無法編輯人員狀態！'); return; }
+        selectedSector = name;
+        document.getElementById('target-title').innerText = '位置管理：' + name;
+        const list  = document.getElementById('current-teams-list');
+        const teams = deployedTeams.filter(t => t.location === name);
+
+        list.innerHTML = teams.map(t => {
+            const airVal = calcAirCurrent(t);
+            return `
+            <div class="bg-slate-950 p-5 rounded-3xl border border-slate-700 shadow-xl space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="font-black text-white text-lg">${t.leader} 小組</span>
+                    <div class="flex gap-2">
+                        <button onclick="editTeam('${t.uid}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-black text-white">編輯/增減</button>
+                        <!-- FIX #7: 徹底撤離加入確認 -->
+                        <button onclick="confirmRemoveTeam('${t.uid}')" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-black text-white">徹底撤離</button>
+                    </div>
+                </div>
+                <div class="text-[11px] text-slate-500 font-bold italic">隊員：${t.members.join('、')}</div>
+                ${t.usesAir ? `
+                <div class="space-y-3">
+                    <div class="flex justify-between text-[11px] font-black">
+                        <span class="text-blue-400">殘氣更新回報</span>
+                        <span id="update-air-val-${t.uid}" class="text-emerald-400 font-mono text-lg">${airVal} bar</span>
+                    </div>
+                    <input type="range" min="0" max="300" step="5" value="${airVal}"
+                           ontouchstart="event.stopPropagation()" onmousedown="event.stopPropagation()"
+                           oninput="document.getElementById('update-air-val-${t.uid}').innerText=this.value+' bar'"
+                           onchange="updateAir('${t.uid}',this.value)"
+                           class="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                </div>` : '<div class="text-center py-2 text-slate-600 text-[10px] font-black">此組目前未啟用氣瓶</div>'}
+            </div>`;
+        }).join('');
+
+        document.getElementById('leader-select').value   = '';
+        document.getElementById('member-2-select').value = '';
+        document.getElementById('member-3-select').value = '';
+        document.getElementById('member-4-select').value = '';
+        if (name === '待命區')    { setTask('待命集結'); }
+        else if (name === 'RIT救援區') { setTask('RIT'); }
+        else                          { setTask('滅火攻擊'); }
+        updateMemberOptions();
+        document.getElementById('modal').classList.remove('hidden');
+    }
+
+    function editTeam(uid) {
+        const team = deployedTeams.find(t => t.uid === uid); if (!team) return;
+        editingTeamUid = uid;
+        let unit = 'ALL';
+        for (let u in personnelData) { if (personnelData[u].includes(team.leader)) { unit = u; break; } }
+        document.getElementById('unit-select').value    = unit; updateMemberOptions();
+        document.getElementById('leader-select').value   = team.members[0] || '';
+        document.getElementById('member-2-select').value = team.members[1] || '';
+        document.getElementById('member-3-select').value = team.members[2] || '';
+        document.getElementById('member-4-select').value = team.members[3] || '';
+        updateMemberOptions(); setTask(team.task);
+        document.getElementById('air-toggle').checked = team.usesAir; toggleAirInput();
+        if (team.usesAir) {
+            document.getElementById('new-air-slider').value = team.initialAir;
+            document.getElementById('new-air-val').innerText = team.initialAir + ' bar';
+        }
+        const btn = document.getElementById('submit-btn');
+        if (btn) { btn.innerText = 'UPDATE / 更新小組資訊'; btn.classList.replace('bg-blue-600','bg-orange-600'); btn.scrollIntoView({ behavior:'smooth' }); }
+    }
+
+    function updateAir(uid, val) {
+        const team = deployedTeams.find(t => t.uid === uid);
+        if (team) {
+            team.initialAir  = parseInt(val);
+            team.startTime   = Date.now();
+            team.snapshotAir = parseInt(val);  // FIX #6: 同步快照
+            team.n100 = false; team.n50 = false; team.n10min = false; team.needsReport = false;
+            addLog('壓力更新', `📲 ${team.members.join('、')} 更新氣壓為 ${val}b`);
+            markDirty(); closeModal();
+        }
+    }
+
+    // FIX #7: 徹底撤離加確認
+    async function confirmRemoveTeam(uid) {
+        const team = deployedTeams.find(t => t.uid === uid);
+        if (!team) return;
+        const ok = await showDialog('confirm','⚠️','確認撤離',`確定將「${team.leader} 小組」徹底移除？\n此操作無法復原。`);
+        if (ok) removeTeam(uid);
+    }
+
+    function removeTeam(uid) {
+        const idx = deployedTeams.findIndex(t => t.uid === uid);
+        if (idx !== -1) {
+            const team   = deployedTeams[idx];
+            const airStr = getAirStatusText(team);
+            addLog('徹底收隊', `👋 ${team.members.join('、')} 已從現場移除${airStr}`);
+            deployedTeams.splice(idx, 1);
+            markDirty(); closeModal();
+        }
+    }
+
+    function setTask(t) {
+        selectedTask = t;
+        document.querySelectorAll('.task-btn').forEach(b => {
+            b.id === 'btn-' + taskMap[t] ? b.classList.add('active') : b.classList.remove('active');
+        });
+        const airToggle = document.getElementById('air-toggle');
+        airToggle.checked = !['待命集結','幕僚作業'].includes(t);
+        toggleAirInput();
+    }
+
+    function submitAssignment() {
+        initAudioOnce();
+        const l = document.getElementById('leader-select').value;
+        if (!l) { showDialog('alert','⚠️','未選帶隊官','請先選擇帶隊官！'); return; }
+        const ms = [l];
+        ['member-2-select','member-3-select','member-4-select'].forEach(id => {
+            const v = document.getElementById(id).value; if (v) ms.push(v);
+        });
+        const usesAir = document.getElementById('air-toggle').checked;
+        const initAir = parseInt(document.getElementById('new-air-slider').value);
+
+        if (editingTeamUid) {
+            const team = deployedTeams.find(t => t.uid === editingTeamUid);
+            const oldMembers = team.members.join('、');
+            const oldAirStr  = getAirStatusText(team);
+            team.leader = l; team.members = ms; team.task = selectedTask;
+            let airLog = '';
+            if (team.usesAir !== usesAir) {
+                team.usesAir = usesAir; airLog = usesAir ? ` (啟用氣瓶:${initAir}b)` : ' (關閉氣瓶監控)';
+                if (usesAir) { team.initialAir = initAir; team.snapshotAir = initAir; team.startTime = Date.now(); team.n100=false; team.n50=false; team.n10min=false; team.needsReport=false; }
+            } else if (usesAir) {
+                team.initialAir = initAir; team.snapshotAir = initAir; team.startTime = Date.now(); team.n10min=false; team.needsReport=false; airLog = ` (氣壓重置為:${initAir}b)`;
+            }
+            addLog('小組更新', `🔄 [${team.location}] ${oldMembers} ➔ ${ms.join('、')} (${selectedTask})${oldAirStr}${airLog}`);
+            editingTeamUid = null;
+            const btn = document.getElementById('submit-btn');
+            if (btn) { btn.innerText = 'DEPLOY / 確定部署'; btn.classList.replace('bg-orange-600','bg-blue-600'); }
+            markDirty(); closeModal(); return;
+        }
+
+        const uid = 't_' + Date.now();
+        deployedTeams.push({
+            uid, leader:l, members:ms, location:selectedSector, task:selectedTask,
+            usesAir, initialAir:initAir, snapshotAir:initAir,
+            startTime:Date.now(), n100:false, n50:false, n10min:false, needsReport:false
+        });
+        const airStr = usesAir ? ` (氣壓:${initAir}b)` : '';
+        addLog('管制指派', `🚀 [${selectedSector}] 指派：${ms.join('、')} (${selectedTask})${airStr}`);
+        markDirty(); closeModal();
+    }
+
+    // ─────────────────────────────────────────────────
+    // FIX #8: Log 寫入（DOM 上限 100 筆）
+    // ─────────────────────────────────────────────────
+    function addLog(action, msg) {
+        const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+        logHistory.push({ time, action, msg });
+
+        const board = document.getElementById('status-board');
+        const logEl = document.createElement('div');
+        logEl.className = 'p-3 rounded-2xl bg-slate-800/50 border-l-4 border-blue-500 shadow-sm';
+        logEl.innerHTML = `<span class="text-blue-400 font-black text-[10px]">[${time}]</span> <span class="text-white font-black">${action}</span><br><span class="text-slate-400">${msg}</span>`;
+        board.prepend(logEl);
+
+        // FIX #8: 超過上限時移除最舊的 DOM 節點
+        while (board.children.length > LOG_DISPLAY_LIMIT) {
+            board.removeChild(board.lastChild);
+        }
+
+        markDirty();
+    }
+
+    // ─────────────────────────────────────────────────
+    // 拖曳
+    // ─────────────────────────────────────────────────
+    function handleDrop(e, newLoc) {
+        e.preventDefault();
+        if (isReadOnly) { showDialog('alert','👁️','唯讀模式','觀看模式下無法移動人員！'); return; }
+        const uid  = e.dataTransfer.getData('uid');
+        const team = deployedTeams.find(t => t.uid === uid);
+        if (team && team.location !== newLoc) {
+            const old    = team.location;
+            const airStr = getAirStatusText(team);
+            team.location = newLoc;
+            if (newLoc === '待命區') {
+                team.task = '待命集結'; team.usesAir = false; team.needsReport = false;
+                addLog('安全撤出', `🔙 ${team.members.join('、')} 從 [${old}] 撤出至 [待命區]${airStr} (氣瓶解除)`);
+            } else if (newLoc === 'RIT救援區') {
+                team.task = 'RIT';
+                addLog('位置變更', `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]${airStr}`);
+            } else {
+                addLog('位置變更', `📍 ${team.members.join('、')}：[${old}] ➔ [${newLoc}]${airStr}`);
+            }
+            markDirty();
+        }
+    }
+
+    // ─────────────────────────────────────────────────
+    // 人員總覽 Modal
+    // ─────────────────────────────────────────────────
+    function showPersonnelList(type) {
+        const modal = document.getElementById('personnel-modal');
+        const title = document.getElementById('personnel-modal-title');
+        const content = document.getElementById('personnel-modal-content');
+        let filteredTeams = [];
+        if (type === 'total')    { title.innerText = '現場總人數名單'; title.className = 'text-xl font-black text-blue-400';    filteredTeams = deployedTeams; }
+        else if (type === 'standby')  { title.innerText = '集結待命名單';   title.className = 'text-xl font-black text-emerald-400'; filteredTeams = deployedTeams.filter(t => t.location === '待命區'); }
+        else if (type === 'deployed') { title.innerText = '熱區部署名單';   title.className = 'text-xl font-black text-red-400';    filteredTeams = deployedTeams.filter(t => t.location !== '待命區'); }
+        if (filteredTeams.length === 0) {
+            content.innerHTML = '<p class="text-center text-slate-500 font-bold py-8">目前無人員紀錄</p>';
+        } else {
+            content.innerHTML = filteredTeams.map(t => {
+                const isStandby = t.location === '待命區';
+                return `<div class="bg-slate-800 p-4 rounded-2xl border ${isStandby?'border-emerald-500/30':'border-red-500/30'} shadow-lg mb-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-black text-white text-lg">${t.leader} 小組</span>
+                        <span class="text-xs px-2 py-1 rounded bg-slate-900 font-bold ${isStandby?'text-emerald-400':'text-red-400'}">📍 ${t.location}</span>
+                    </div>
+                    <div class="text-[11px] text-slate-400 font-bold mb-1">任務：<span class="text-white">${t.task}</span></div>
+                    <div class="text-[11px] text-slate-400 font-bold">隊員：<span class="text-slate-200">${t.members.join('、')}</span></div>
+                </div>`;
+            }).join('');
+        }
+        modal.classList.remove('hidden');
+    }
+
+    function closePersonnelList() { document.getElementById('personnel-modal').classList.add('hidden'); }
+    function toggleAirInput()     { document.getElementById('air-input-section').style.display = document.getElementById('air-toggle').checked ? 'block' : 'none'; }
+    function closeModal() {
+        document.getElementById('modal').classList.add('hidden');
+        document.getElementById('add-personnel-form').classList.add('hidden'); // 關閉時也收起 form
+        editingTeamUid = null;
+        const btn = document.getElementById('submit-btn');
+        if (btn && btn.classList.contains('bg-orange-600')) { btn.innerText = 'DEPLOY / 確定部署'; btn.classList.replace('bg-orange-600','bg-blue-600'); }
+    }
+
+    function adjustFloors(d)    { if(isReadOnly) return; floorCount    = Math.max(1, Math.min(10, floorCount+d));    document.getElementById('floor-display').innerText    = floorCount;    markDirty(); }
+    function adjustBasements(d) { if(isReadOnly) return; basementCount = Math.max(0, Math.min(5,  basementCount+d)); document.getElementById('basement-display').innerText = basementCount; markDirty(); }
+    function adjustUnits(d)     { if(isReadOnly) return; unitCount     = Math.max(1, Math.min(5,  unitCount+d));     document.getElementById('unit-display').innerText     = unitCount;     markDirty(); }
+
+    function exportLogs() {
+        let csv = '\uFEFF時間,動作,詳情\n';
+        logHistory.forEach(r => csv += `"${r.time}","${r.action}","${r.msg}"\n`);
+        const blob = new Blob([csv], {type:'text/csv'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = `FireLog_${SESSION_NAME}_${Date.now()}.csv`; a.click();
+    }
+
+    async function captureScreen() {
+        const canvas = await html2canvas(document.body, {backgroundColor:'#020617'});
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL(); a.download = `TacticalBoard_${Date.now()}.png`; a.click();
+    }
+
+    function toggleManual() { document.getElementById('manual-modal').classList.toggle('hidden'); }
+
+    // ─────────────────────────────────────────────────
+    // 雲端同步
+    // ─────────────────────────────────────────────────
+    async function syncToCloud() {
+        if (isReadOnly) return;
+        if (!GAS_WEB_APP_URL) return;
+
+        // FIX #6: 同步時附上每個 team 的氣壓快照
+        const teamsWithSnapshot = deployedTeams.map(t => ({
+            ...t,
+            snapshotAir: t.usesAir ? calcAirCurrent(t) : undefined
+        }));
+
+        const appState = JSON.stringify({
+            deployedTeams: teamsWithSnapshot,
+            floorCount, basementCount, unitCount,
+            logHistory
+        });
+
+        const logsToSync = logHistory.slice(lastSyncedLogIndex);
+        const stats = {
+            total:    document.getElementById('stat-total').innerText,
+            standby:  document.getElementById('stat-standby').innerText,
+            deployed: document.getElementById('stat-deployed').innerText
+        };
+        // FIX #3: GAS 無法讀取自訂 Header，token 改放 JSON payload 內
+        const payload = {
+            token: API_TOKEN,
+            sessionName: SESSION_NAME,
+            logs: logsToSync.length > 0 ? logsToSync : null,
+            stats,
+            appState
+        };
+
+        document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
+        document.getElementById('sync-text').innerText = `同步中... (${SESSION_NAME})`;
+
+        try {
+            const response = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                lastSyncedLogIndex += logsToSync.length;
+                document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-emerald-500';
+                document.getElementById('sync-text').innerText = `已同步 (${SESSION_NAME})`;
+                if (result.warning) addLog('同步警告', `⚠️ ${result.warning}`);
+            } else if (result.code === 'UNAUTHORIZED') {
+                document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-red-500';
+                document.getElementById('sync-text').innerText = 'Token 驗證失敗';
+            } else if (result.code === 'PROTECTED_SHEET') {
+                document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-orange-500';
+                document.getElementById('sync-text').innerText = '案件編號與名冊分頁衝突';
+                addLog('同步錯誤', `⛔ ${result.message}`);
+            }
+        } catch(e) {
+            document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-red-500';
+            document.getElementById('sync-text').innerText = '同步失敗重試中';
+        }
+    }
+
+    // FIX #10: isManual 參數取代全域 event 判斷
+    async function fetchStateFromCloud(isManual = false) {
+        if (isManual) {
+            const ok = await showDialog('confirm','☁️','載入現場狀況',
+                '確定要從雲端載入現場狀況嗎？\n\n注意：這將覆蓋目前的畫面，並自動進入「唯讀觀看模式」。');
+            if (!ok) return;
+        }
+
+        initAudioOnce();
+        if (!GAS_WEB_APP_URL) { showDialog('alert','⚠️','設定錯誤','請先填入 GAS 網址'); return; }
+
+        const incidentId = document.getElementById('incident-id-input').value.trim();
+        if (!incidentId && isManual) { showDialog('alert','⚠️','欄位空白','請先輸入案件編號！'); return; }
+
+        if (!isReadOnly) {
+            isReadOnly = true;
+            clearInterval(syncIntervalId);
+            syncIntervalId = setInterval(() => fetchStateFromCloud(false), 30000);
+            document.getElementById('sync-status').innerText   = '👁️ VIEW-ONLY MODE (唯讀觀看模式)';
+            document.getElementById('sync-status').className   = 'text-[10px] text-purple-400 font-bold uppercase tracking-widest mb-2 mt-1 animate-pulse';
+            document.getElementById('takeover-btn').classList.remove('hidden');
+        }
+
+        document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-purple-400 animate-pulse';
+        document.getElementById('sync-text').innerText = `正在下載 ${incidentId} 現場狀態...`;
+
+        try {
+            // FIX #3: token 改為 URL 參數（GAS 無法讀取自訂 Header）
+            const response = await fetch(`${GAS_WEB_APP_URL}?action=getState&incidentId=${encodeURIComponent(incidentId)}&token=${encodeURIComponent(API_TOKEN)}`);
+            const result = await response.json();
+
+            if (result.status === 'success' && result.data) {
+                const state = JSON.parse(result.data);
+                deployedTeams = state.deployedTeams || [];
+                floorCount    = state.floorCount    || 1;
+                basementCount = state.basementCount || 0;
+                unitCount     = state.unitCount     || 1;
+
+                if (state.logHistory) {
+                    logHistory         = state.logHistory;
+                    lastSyncedLogIndex = logHistory.length;
+                    const board = document.getElementById('status-board');
+                    board.innerHTML = '';
+                    // FIX #8: 只顯示最新 LOG_DISPLAY_LIMIT 筆
+                    logHistory.slice(-LOG_DISPLAY_LIMIT).reverse().forEach(log => {
+                        const logEl = document.createElement('div');
+                        logEl.className = 'p-3 rounded-2xl bg-slate-800/50 border-l-4 border-blue-500 shadow-sm';
+                        logEl.innerHTML = `<span class="text-blue-400 font-black text-[10px]">[${log.time}]</span> <span class="text-white font-black">${log.action}</span><br><span class="text-slate-400">${log.msg}</span>`;
+                        board.prepend(logEl);
+                    });
+                }
+
+                document.getElementById('floor-display').innerText    = floorCount;
+                document.getElementById('basement-display').innerText = basementCount;
+                document.getElementById('unit-display').innerText     = unitCount;
+
+                markDirty();
+                if (isManual) playSound('sync');
+
+                document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-emerald-500';
+                document.getElementById('sync-text').innerText = `已同步主指揮車 (${incidentId})`;
+            } else {
+                if (isManual) showDialog('alert','🔍','找不到資料','找不到該案件的部署資料，請確認主控已上傳。');
+                document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-slate-500';
+                document.getElementById('sync-text').innerText = '尚未同步';
+            }
+        } catch(e) {
+            if (isManual) showDialog('alert','🔌','連線失敗','下載失敗，請檢查網路連線。');
+            document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-red-500';
+            document.getElementById('sync-text').innerText = '下載失敗';
+        }
+    }
+
+    // ─────────────────────────────────────────────────
+    // 接管指揮
+    // ─────────────────────────────────────────────────
+    async function takeoverCommand() {
+        const ok = await showDialog('confirm','🔥','接管指揮權',
+            '⚠️ 警告：確定要接管指揮權嗎？\n\n接管後，這台設備將成為「主控端」，您的操作會覆蓋雲端的紀錄。\n\n請務必確認原指揮官的裝置已停止操作，以免發生指令衝突！');
+        if (!ok) return;
+
+        isReadOnly = false;
+        clearInterval(syncIntervalId);
+        syncIntervalId = setInterval(syncToCloud, 30000);
+
+        document.getElementById('sync-status').innerText = '● CHENGGONG FIRE UNIT CONNECTED';
+        document.getElementById('sync-status').className = 'text-[10px] text-emerald-500 font-bold uppercase tracking-widest mb-2 mt-1';
+        document.getElementById('takeover-btn').classList.add('hidden');
+
+        addLog('指揮權轉移','🔥 本機已接管指揮權，恢復人員拖曳與自動警報。');
+        markDirty();
+        playSound('sync');
+        showDialog('alert','✅','接管成功','已成功接管指揮權！\n氣壓警報與人員拖曳功能已解鎖。');
+    }
+
+    // ─────────────────────────────────────────────────
+    // 啟動
+    // ─────────────────────────────────────────────────
+    syncIntervalId = setInterval(syncToCloud, 30000);
+    window.onload  = () => { loadPersonnel(); setTask('待命集結'); markDirty(); };
+
     </script>
 </body>
 </html>
