@@ -499,6 +499,9 @@
     let mapDirty       = true;   // FIX #2: 僅在狀態變更時重繪
     let maydayTimer    = null;
     let maydayInterval = null;
+    let lastServerTs   = 0;      // 上次成功同步的伺服器時間戳，用於多裝置衝突偵測
+    let _syncInProgress = false; // 防止並行發送多個同步請求（行動裝置網路切換保護）
+    let _syncRetryCount = 0;     // 網路失敗重試計數
 
     const CONSUMPTION_PER_MIN = 10;
     const LOG_DISPLAY_LIMIT   = 100;  // FIX #8: Log DOM 上限
@@ -1377,6 +1380,8 @@
     async function syncToCloud() {
         if (isReadOnly) return;
         if (!GAS_WEB_APP_URL) return;
+        if (_syncInProgress) return; // 行動裝置網路切換時防止並行請求
+        _syncInProgress = true;
 
         // FIX #6: 同步時附上每個 team 的氣壓快照
         const teamsWithSnapshot = deployedTeams.map(t => ({
@@ -1389,7 +1394,7 @@
             floorCount, basementCount, unitCount,
             logHistory,
             personnelData // 🌟 修正：把動態新增的人員名單也一起打包上傳 🌟
-        });;
+        });
 
         const logsToSync = logHistory.slice(lastSyncedLogIndex);
         const stats = {
@@ -1401,6 +1406,7 @@
         const payload = {
             token: API_TOKEN,
             sessionName: SESSION_NAME,
+            clientTs: lastServerTs, // 多裝置衝突偵測：帶上本機上次確認的伺服器時間戳
             logs: logsToSync.length > 0 ? logsToSync : null,
             stats,
             appState
@@ -1416,11 +1422,26 @@
                 body: JSON.stringify(payload)
             });
             const result = await response.json();
+            _syncRetryCount = 0; // 成功後重置重試計數
             if (result.status === 'success') {
                 lastSyncedLogIndex += logsToSync.length;
+                if (result.serverTs) lastServerTs = result.serverTs; // 記住伺服器最新時間戳
                 document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-emerald-500';
                 document.getElementById('sync-text').innerText = `已同步 (${SESSION_NAME})`;
-                if (result.warning) addLog('同步警告', `⚠️ ${result.warning}`);
+
+                if (result.warning === 'STALE_STATE') {
+                    // 伺服器偵測到本裝置的快照比雲端舊，自動切換為唯讀觀看模式
+                    isReadOnly = true;
+                    lastServerTs = result.serverTs || lastServerTs;
+                    clearInterval(syncIntervalId);
+                    syncIntervalId = setInterval(() => fetchStateFromCloud(false), 30000);
+                    document.getElementById('sync-status').innerText = '👁️ VIEW-ONLY MODE (唯讀觀看模式)';
+                    document.getElementById('sync-status').className = 'text-[10px] text-purple-400 font-bold uppercase tracking-widest mb-2 mt-1 animate-pulse';
+                    document.getElementById('takeover-btn').classList.remove('hidden');
+                    addLog('衝突偵測', '⚠️ 偵測到其他主控裝置，本機自動切換為唯讀觀看模式');
+                } else if (result.warning) {
+                    addLog('同步警告', `⚠️ ${result.warning}`);
+                }
             } else if (result.code === 'UNAUTHORIZED') {
                 document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-red-500';
                 document.getElementById('sync-text').innerText = 'Token 驗證失敗';
@@ -1430,8 +1451,20 @@
                 addLog('同步錯誤', `⛔ ${result.message}`);
             }
         } catch(e) {
+            // 行動裝置網路不穩時自動重試（最多 3 次，間隔遞增）
+            _syncRetryCount++;
+            const retryDelay = _syncRetryCount * 5000;
             document.getElementById('sync-dot').className  = 'w-2 h-2 rounded-full bg-red-500';
-            document.getElementById('sync-text').innerText = '同步失敗重試中';
+            if (_syncRetryCount <= 3) {
+                document.getElementById('sync-text').innerText = `同步失敗，${_syncRetryCount * 5}秒後重試 (${_syncRetryCount}/3)`;
+                setTimeout(() => { _syncInProgress = false; syncToCloud(); }, retryDelay);
+                return;
+            } else {
+                _syncRetryCount = 0;
+                document.getElementById('sync-text').innerText = '同步失敗，請確認網路連線';
+            }
+        } finally {
+            _syncInProgress = false;
         }
     }
 
@@ -1525,7 +1558,9 @@
                 floorCount    = state.floorCount    || 1;
                 basementCount = state.basementCount || 0;
                 unitCount     = state.unitCount     || 1;
-                
+
+                if (result.serverTs) lastServerTs = result.serverTs; // 記住伺服器時間戳，供後續衝突偵測使用
+
                 // 🌟 修正：還原 B 車的人員名單，並更新下拉選單 🌟
                 if (state.personnelData) {
                     personnelData = state.personnelData;
@@ -1539,7 +1574,7 @@
                     board.innerHTML = '';
                     // FIX #8: 只顯示最新 LOG_DISPLAY_LIMIT 筆 (修正順序，最新在最上)
                     logHistory.slice(-LOG_DISPLAY_LIMIT).forEach(log => {
-                        const logEl = document.createElement('div');;
+                        const logEl = document.createElement('div');
                         logEl.className = 'p-3 rounded-2xl bg-slate-800/50 border-l-4 border-blue-500 shadow-sm';
                         logEl.innerHTML = `<span class="text-blue-400 font-black text-[10px]">[${log.time}]</span> <span class="text-white font-black">${log.action}</span><br><span class="text-slate-400">${log.msg}</span>`;
                         board.prepend(logEl);
@@ -1584,6 +1619,8 @@
         }
 
         isReadOnly = false;
+        lastServerTs = 0;    // 接管後清除舊時間戳，讓本機成為新的權威來源
+        _syncRetryCount = 0;
         syncIntervalId = setInterval(syncToCloud, 30000);
 
         document.getElementById('sync-status').innerText = '● CHENGGONG FIRE UNIT CONNECTED';
