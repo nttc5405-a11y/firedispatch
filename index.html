@@ -130,6 +130,93 @@
             outline: none;
         }
         #add-personnel-form input:focus { border-color: #60a5fa; }
+
+        /* ══════════════════════════════════════════════
+           ☀️  戶外高對比模式
+           原則：提亮背景、消除半透明層、關鍵文字強制白色
+        ══════════════════════════════════════════════ */
+        body.outdoor-mode {
+            background-color: #1e3a5f !important;
+        }
+        /* 面板底色 */
+        body.outdoor-mode .bg-slate-900,
+        body.outdoor-mode .bg-slate-900\/90 {
+            background-color: #1a3050 !important;
+        }
+        body.outdoor-mode .bg-slate-950,
+        body.outdoor-mode .bg-slate-950\/50,
+        body.outdoor-mode .bg-slate-950\/30 {
+            background-color: #142540 !important;
+        }
+        body.outdoor-mode .bg-slate-800,
+        body.outdoor-mode .bg-slate-800\/50 {
+            background-color: #1e3a5f !important;
+        }
+        /* 灰色文字 → 白/亮色 */
+        body.outdoor-mode .text-slate-400 { color: #f1f5f9 !important; }
+        body.outdoor-mode .text-slate-500 { color: #e2e8f0 !important; }
+        body.outdoor-mode .text-slate-300 { color: #ffffff  !important; }
+        body.outdoor-mode .text-slate-600 { color: #cbd5e1  !important; }
+        body.outdoor-mode .opacity-40     { opacity: 0.85   !important; }
+        body.outdoor-mode .opacity-10     { opacity: 0.6    !important; }
+        /* 邊框加亮 */
+        body.outdoor-mode .border-slate-700 { border-color: #4a7aad !important; }
+        body.outdoor-mode .border-slate-800 { border-color: #2d5a8e !important; }
+        body.outdoor-mode .border-slate-600 { border-color: #5a8fc4 !important; }
+        /* 建築區塊底色更亮、邊框更明顯 */
+        body.outdoor-mode .bg-inside   { background-color: #1a3a6a !important; border-color: #60a5fa !important; border-width: 2px !important; }
+        body.outdoor-mode .bg-outside  { background-color: #064e3b !important; border-color: #34d399 !important; border-width: 2px !important; }
+        body.outdoor-mode .bg-rit      { background-color: #5a0f0f !important; border-color: #f87171 !important; border-width: 2px !important; }
+        body.outdoor-mode .bg-basement { background-color: #263347 !important; border-color: #7dd3fc !important; border-width: 2px !important; }
+        body.outdoor-mode .bg-staging  { background-color: #1a3050 !important; border-color: #60a5fa !important; border-width: 2px !important; }
+        /* 人員小卡底色 */
+        body.outdoor-mode .draggable-team {
+            background-color: rgba(10, 30, 60, 0.95) !important;
+            border-color: rgba(255,255,255,0.5) !important;
+        }
+        /* 統計數字加大加亮 */
+        body.outdoor-mode #stat-total    { font-size: 1.4rem !important; color: #93c5fd !important; font-weight: 900 !important; }
+        body.outdoor-mode #stat-standby  { font-size: 1.4rem !important; color: #6ee7b7 !important; font-weight: 900 !important; }
+        body.outdoor-mode #stat-deployed { font-size: 1.4rem !important; color: #fca5a5 !important; font-weight: 900 !important; }
+        /* 氣壓數字加大 */
+        body.outdoor-mode .draggable-team .font-mono {
+            font-size: 1.1rem !important;
+            font-weight: 900 !important;
+        }
+        /* Log 面板 */
+        body.outdoor-mode #status-board {
+            background-color: #142540 !important;
+        }
+        body.outdoor-mode #status-board > div {
+            background-color: rgba(26, 48, 80, 0.98) !important;
+            border-left-color: #60a5fa !important;
+        }
+        /* 同步狀態文字 */
+        body.outdoor-mode #sync-text { color: #e2e8f0 !important; font-weight: 900 !important; }
+        /* 警報顏色加飽和 */
+        body.outdoor-mode .warning-red    { border-color: #ff2222 !important; box-shadow: 0 0 20px #ff2222 !important; }
+        body.outdoor-mode .warning-orange { border-color: #fb923c !important; box-shadow: 0 0 15px #fb923c !important; }
+        body.outdoor-mode .warning-blue   { border-color: #60a5fa !important; box-shadow: 0 0 20px #60a5fa !important; }
+        /* 任務標籤顏色飽和 */
+        body.outdoor-mode .task-滅 { background-color: #dc2626 !important; }
+        body.outdoor-mode .task-搜 { background-color: #ea580c !important; }
+        body.outdoor-mode .task-排 { background-color: #0891b2 !important; }
+        body.outdoor-mode .task-周 { background-color: #2563eb !important; }
+        body.outdoor-mode .task-侷 { background-color: #059669 !important; }
+        body.outdoor-mode .task-幕 { background-color: #9333ea !important; }
+        body.outdoor-mode .task-RIT { background-color: #b91c1c !important; }
+        body.outdoor-mode .task-待 { background-color: #475569 !important; border-color: #94a3b8 !important; }
+        /* custom dialog */
+        body.outdoor-mode #custom-dialog-box { background: #1a3050 !important; border-color: #4a7aad !important; }
+        /* modal 背景 */
+        body.outdoor-mode #modal .bg-slate-900,
+        body.outdoor-mode #personnel-modal .bg-slate-900,
+        body.outdoor-mode #manual-modal .bg-slate-900,
+        body.outdoor-mode #case-list-modal .bg-slate-900 { background-color: #1a3050 !important; }
+        body.outdoor-mode #modal .bg-slate-950,
+        body.outdoor-mode #personnel-modal .bg-slate-950,
+        body.outdoor-mode #manual-modal .bg-slate-950,
+        body.outdoor-mode #case-list-modal .bg-slate-950 { background-color: #142540 !important; }
     </style>
 </head>
 <body class="flex flex-col lg:flex-row h-screen" onclick="initAudioOnce()">
@@ -178,6 +265,9 @@
             </div>
 
             <div class="flex gap-2">
+                <button id="outdoor-btn" onclick="toggleOutdoorMode()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center border border-slate-700 shadow-lg" title="戶外高對比模式">
+                    <span class="text-yellow-400 font-bold text-lg">☀</span>
+                </button>
                 <button onclick="toggleManual()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center border border-slate-700 shadow-lg">
                     <span class="text-blue-400 font-bold">？</span>
                 </button>
@@ -444,6 +534,19 @@
                         MAYDAY 啟動方式
                     </h4>
                     <p class="text-slate-400 pl-8"><b class="text-red-400">長按「🚨 MAYDAY」按鈕 1.5 秒</b>以觸發警報，防止誤觸。</p>
+                </section>
+                <section class="space-y-2">
+                    <h4 class="text-white font-black flex items-center gap-2">
+                        <span class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-[10px]">5</span>
+                        戶外高對比模式
+                    </h4>
+                    <p class="text-slate-400 pl-8">在戶外陽光直射下操作時，點擊右上角 <b class="text-yellow-300">「☀」按鈕</b> 切換為戶外模式。按鈕變為<b class="text-yellow-300">黃色</b>表示已啟用，再按一次切回夜間模式。</p>
+                    <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
+                        <li>背景提亮為深藍色，消除全黑底反光問題</li>
+                        <li>所有灰色說明文字強制顯示為亮白色</li>
+                        <li>現場人數與氣壓數字放大並加粗</li>
+                        <li>建築區塊邊框加亮、警報光暈增強</li>
+                    </ul>
                 </section>
                 <div class="pt-4 text-center">
                     <button onclick="toggleManual()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black border border-blue-500 shadow-lg active:scale-95 transition-all">我已充分了解</button>
@@ -1373,6 +1476,21 @@
     }
 
     function toggleManual() { document.getElementById('manual-modal').classList.toggle('hidden'); }
+
+    // ── 戶外高對比模式切換 ──────────────────────────────
+    function toggleOutdoorMode() {
+        const isOutdoor = document.body.classList.toggle('outdoor-mode');
+        const btn = document.getElementById('outdoor-btn');
+        if (isOutdoor) {
+            btn.classList.replace('bg-slate-800', 'bg-yellow-500');
+            btn.classList.replace('border-slate-700', 'border-yellow-400');
+            btn.title = '切換回夜間模式';
+        } else {
+            btn.classList.replace('bg-yellow-500', 'bg-slate-800');
+            btn.classList.replace('border-yellow-400', 'border-slate-700');
+            btn.title = '戶外高對比模式';
+        }
+    }
 
     // ─────────────────────────────────────────────────
     // 雲端同步
