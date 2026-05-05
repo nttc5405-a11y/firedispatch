@@ -244,28 +244,23 @@
             <div class="flex gap-2 flex-wrap">
                 <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800 select-none">
                     <span class="text-[10px] text-slate-500 font-black mr-2">地上(F)</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustFloors(-1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" class="text-slate-400 hover:text-white px-2 font-black transition-colors">-</button>
+                    <button onpointerdown="startAdjustHold(event, () => adjustFloors(-1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">-</button>
                     <span id="floor-display" class="font-mono text-sm font-black text-blue-400 w-4 text-center">1</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustFloors(1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" class="text-slate-400 hover:text-white px-2 font-black transition-colors">+</button>
+                    <button onpointerdown="startAdjustHold(event, () => adjustFloors(1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">+</button>
                 </div>
                 <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800 select-none">
                     <span class="text-[10px] text-slate-500 font-black mr-2">地下(B)</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustBasements(-1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" class="text-slate-400 hover:text-white px-2 font-black transition-colors">-</button>
+                    <button onpointerdown="startAdjustHold(event, () => adjustBasements(-1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">-</button>
                     <span id="basement-display" class="font-mono text-sm font-black text-purple-400 w-4 text-center">0</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustBasements(1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" class="text-slate-400 hover:text-white px-2 font-black transition-colors">+</button>
+                    <button onpointerdown="startAdjustHold(event, () => adjustBasements(1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">+</button>
                 </div>
                 <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800 select-none">
                     <span class="text-[10px] text-slate-500 font-black mr-2">棟數(U)</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustUnits(-1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" class="text-slate-400 hover:text-white px-2 font-black transition-colors">-</button>
+                    <button onpointerdown="startAdjustHold(event, () => adjustUnits(-1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">-</button>
                     <span id="unit-display" class="font-mono text-sm font-black text-emerald-400 w-4 text-center">1</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustUnits(1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" class="text-slate-400 hover:text-white px-2 font-black transition-colors">+</button>
+                    <button onpointerdown="startAdjustHold(event, () => adjustUnits(1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">+</button>
                 </div>
             </div>
-            <div id="cloud-sync-status" class="flex items-center gap-1.5 px-2 border-l border-slate-700">
-                <span class="w-2 h-2 rounded-full bg-slate-500 shrink-0" id="sync-dot"></span>
-                <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap" id="sync-text">尚未啟用同步</span>
-            </div>
-        </div>
 
         <!-- 地圖主體 -->
         <div id="capture-area" class="flex-1 flex items-center justify-center p-2">
@@ -546,11 +541,11 @@
             playBeep(800, 'sine', 0.1, 0.05); // 成功觸發給個短音效
         }, 2000);
     }
+    
     function cancelAdjustHold(e) {
-        clearTimeout(adjustTimer);
+        if (adjustTimer) clearTimeout(adjustTimer);
         e.currentTarget.style.color = '';
     }
-
     // ─────────────────────────────────────────────────
     // 防誤觸：案件結束 (長按 3 秒)
     // ─────────────────────────────────────────────────
@@ -576,33 +571,41 @@
     }
 
     async function triggerCloseCaseReal() {
-        addLog("案件結束", "🛑 案件宣告結束，系統已凍結並更改分頁名稱。");
+        addLog("案件結束", "🛑 案件宣告結束，系統準備凍結並更改分頁名稱。");
         playSound('sync');
 
-        const oldName = SESSION_NAME;
-        SESSION_NAME = SESSION_NAME + '_已結案';
-        document.getElementById('incident-id-input').value = SESSION_NAME;
-        
-        // 1. 強制執行一次最後上傳 (包含最新的日誌與已結案的名稱)
+        // 1. 先用「原本的名字」強制執行一次最後上傳，把最終日誌寫進去
         await syncToCloud(); 
 
-        // 2. 轉為唯讀模式，徹底凍結畫面操作與計時器
-        isReadOnly = true;
-        clearInterval(syncIntervalId);
-        document.getElementById('sync-status').innerText = '👁️ CASE CLOSED (已結案)';
-        document.getElementById('sync-status').className = 'text-[10px] text-red-400 font-bold uppercase tracking-widest mb-2 mt-1';
+        const oldName = SESSION_NAME;
+        const newName = SESSION_NAME + '_已結案';
         
-        // 3. 通知後端更改 Google 試算表的分頁名稱
+        // 2. 通知後端更改 Google 試算表的分頁名稱
         try {
-            const payload = { action: "closeCase", token: API_TOKEN, oldName: oldName, newName: SESSION_NAME };
-            await fetch(GAS_WEB_APP_URL, {
+            const payload = { action: "closeCase", token: API_TOKEN, oldName: oldName, newName: newName };
+            const response = await fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
             });
-            showDialog('alert','🛑','案件結束',`已成功結案！\n分頁名稱已更新為：\n${SESSION_NAME}\n\n系統已停止計時並轉為唯讀狀態。`);
+            const res = await response.json();
+            
+            if (res.status === 'success') {
+                // 3. 確認後端改名成功後，前端才正式變更名稱並進入凍結狀態
+                SESSION_NAME = newName;
+                document.getElementById('incident-id-input').value = SESSION_NAME;
+                isReadOnly = true;
+                clearInterval(syncIntervalId); // 徹底關閉後台同步上傳
+                
+                document.getElementById('sync-status').innerText = '👁️ CASE CLOSED (已結案)';
+                document.getElementById('sync-status').className = 'text-[10px] text-red-400 font-bold uppercase tracking-widest mb-2 mt-1';
+                
+                showDialog('alert','🛑','案件結束',`已成功結案！\n分頁名稱已更新為：\n${SESSION_NAME}\n\n系統已停止計時並轉為唯讀狀態。`);
+            } else {
+                showDialog('alert','⚠️','結案異常', res.message || '結案名稱更新失敗。');
+            }
         } catch(e) {
-            showDialog('alert','⚠️','結案異常','結案名稱更新失敗，但本地已標記為結案。請檢查網路連線。');
+            showDialog('alert','⚠️','網路異常','連線失敗，無法更新分頁名稱。');
         }
     }
     // ─────────────────────────────────────────────────
