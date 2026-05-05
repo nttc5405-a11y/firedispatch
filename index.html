@@ -545,7 +545,7 @@
             btn.style.color = '';
             callback();
             playBeep(800, 'sine', 0.1, 0.05); // 成功觸發給個短音效
-        }, 2000);
+        }, 1000); // 👈 改成 1000 (1秒) 即可，地上/地下/棟數點擊秒數設定
     }
     function cancelAdjustHold(btn) {
         if (adjustTimer) clearTimeout(adjustTimer);
