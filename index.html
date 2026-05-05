@@ -244,23 +244,30 @@
             <div class="flex gap-2 flex-wrap">
                 <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800 select-none">
                     <span class="text-[10px] text-slate-500 font-black mr-2">地上(F)</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustFloors(-1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">-</button>
+                    <button onpointerdown="startAdjustHold(this, () => adjustFloors(-1))" onpointerup="cancelAdjustHold(this)" onpointerleave="cancelAdjustHold(this)" onpointercancel="cancelAdjustHold(this)" oncontextmenu="return false;" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-3 py-1 font-black transition-colors">-</button>
                     <span id="floor-display" class="font-mono text-sm font-black text-blue-400 w-4 text-center">1</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustFloors(1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">+</button>
+                    <button onpointerdown="startAdjustHold(this, () => adjustFloors(1))" onpointerup="cancelAdjustHold(this)" onpointerleave="cancelAdjustHold(this)" onpointercancel="cancelAdjustHold(this)" oncontextmenu="return false;" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-3 py-1 font-black transition-colors">+</button>
                 </div>
                 <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800 select-none">
                     <span class="text-[10px] text-slate-500 font-black mr-2">地下(B)</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustBasements(-1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">-</button>
+                    <button onpointerdown="startAdjustHold(this, () => adjustBasements(-1))" onpointerup="cancelAdjustHold(this)" onpointerleave="cancelAdjustHold(this)" onpointercancel="cancelAdjustHold(this)" oncontextmenu="return false;" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-3 py-1 font-black transition-colors">-</button>
                     <span id="basement-display" class="font-mono text-sm font-black text-purple-400 w-4 text-center">0</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustBasements(1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">+</button>
+                    <button onpointerdown="startAdjustHold(this, () => adjustBasements(1))" onpointerup="cancelAdjustHold(this)" onpointerleave="cancelAdjustHold(this)" onpointercancel="cancelAdjustHold(this)" oncontextmenu="return false;" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-3 py-1 font-black transition-colors">+</button>
                 </div>
                 <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800 select-none">
                     <span class="text-[10px] text-slate-500 font-black mr-2">棟數(U)</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustUnits(-1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">-</button>
+                    <button onpointerdown="startAdjustHold(this, () => adjustUnits(-1))" onpointerup="cancelAdjustHold(this)" onpointerleave="cancelAdjustHold(this)" onpointercancel="cancelAdjustHold(this)" oncontextmenu="return false;" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-3 py-1 font-black transition-colors">-</button>
                     <span id="unit-display" class="font-mono text-sm font-black text-emerald-400 w-4 text-center">1</span>
-                    <button onpointerdown="startAdjustHold(event, () => adjustUnits(1))" onpointerup="cancelAdjustHold(event)" onpointerleave="cancelAdjustHold(event)" onpointercancel="cancelAdjustHold(event)" oncontextmenu="event.preventDefault();" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-2 font-black transition-colors">+</button>
+                    <button onpointerdown="startAdjustHold(this, () => adjustUnits(1))" onpointerup="cancelAdjustHold(this)" onpointerleave="cancelAdjustHold(this)" onpointercancel="cancelAdjustHold(this)" oncontextmenu="return false;" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-3 py-1 font-black transition-colors">+</button>
                 </div>
             </div>
+            
+            <!-- 🌟 補回遺失的同步狀態區塊 🌟 -->
+            <div id="cloud-sync-status" class="flex items-center gap-1.5 px-2 border-l border-slate-700">
+                <span class="w-2 h-2 rounded-full bg-slate-500 shrink-0" id="sync-dot"></span>
+                <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap" id="sync-text">尚未啟用同步</span>
+            </div>
+        </div>
 
         <!-- 地圖主體 -->
         <div id="capture-area" class="flex-1 flex items-center justify-center p-2">
@@ -531,9 +538,8 @@
     // 防誤觸：建築層數調整 (長按 2 秒)
     // ─────────────────────────────────────────────────
     let adjustTimer = null;
-    function startAdjustHold(e, callback) {
+    function startAdjustHold(btn, callback) {
         if (isReadOnly) return;
-        const btn = e.currentTarget;
         btn.style.color = '#ef4444'; // 變成紅色提示正在按壓
         adjustTimer = setTimeout(() => {
             btn.style.color = '';
@@ -541,10 +547,9 @@
             playBeep(800, 'sine', 0.1, 0.05); // 成功觸發給個短音效
         }, 2000);
     }
-    
-    function cancelAdjustHold(e) {
+    function cancelAdjustHold(btn) {
         if (adjustTimer) clearTimeout(adjustTimer);
-        e.currentTarget.style.color = '';
+        btn.style.color = '';
     }
     // ─────────────────────────────────────────────────
     // 防誤觸：案件結束 (長按 3 秒)
