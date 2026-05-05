@@ -226,7 +226,7 @@
                     <button onclick="startScanner()" class="bg-emerald-700 hover:bg-emerald-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all">
                         📷 掃碼報到
                     </button>
-                    <button id="load-state-btn" onclick="fetchStateFromCloud(true)" class="bg-purple-700 hover:bg-purple-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all">
+                    <button id="load-state-btn" onclick="openCaseSelector()" class="bg-purple-700 hover:bg-purple-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all flex items-center gap-1">
                         📥 載入現場狀況
                     </button>
                     <button id="takeover-btn" onclick="takeoverCommand()" class="hidden bg-red-700 hover:bg-red-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all">
@@ -452,6 +452,22 @@
         </div>
     </div>
 
+<!-- ════ 新增：案件選擇 Modal ════ -->
+    <div id="case-list-modal" class="fixed inset-0 bg-black/95 z-[90] hidden flex-col items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-md rounded-[2.5rem] border border-slate-700 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                <div>
+                    <h3 class="text-xl font-black text-purple-400">📥 選擇進行中案件</h3>
+                    <p class="text-[10px] text-slate-500 uppercase">Active Incidents</p>
+                </div>
+                <button onclick="document.getElementById('case-list-modal').classList.add('hidden')" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white text-2xl hover:bg-slate-700 transition-colors">&times;</button>
+            </div>
+            <div id="case-list-content" class="p-6 overflow-y-auto space-y-3 flex flex-col">
+                <!-- 這裡會動態生成按鈕 -->
+            </div>
+        </div>
+    </div>
+    
     <!-- ════════════════════════════════════════════
          JavaScript
     ════════════════════════════════════════════ -->
@@ -1419,6 +1435,59 @@
         }
     }
 
+// ─────────────────────────────────────────────────
+    // 撈取未結案列表 (步驟 2-4)
+    // ─────────────────────────────────────────────────
+    async function openCaseSelector() {
+        initAudioOnce();
+        if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL === '請貼上你的網頁應用程式網址') {
+            showDialog('alert','⚠️','設定錯誤','請先填入 GAS 網址'); return; 
+        }
+
+        document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-purple-400 animate-pulse';
+        document.getElementById('sync-text').innerText = '正在撈取案件列表...';
+
+        try {
+            // 向後端請求獲取進行中的分頁名稱
+            const response = await fetch(`${GAS_WEB_APP_URL}?action=getActiveCases&token=${encodeURIComponent(API_TOKEN)}`);
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                const cases = result.data || [];
+                const content = document.getElementById('case-list-content');
+                content.innerHTML = ''; // 清空舊內容
+                
+                if (cases.length === 0) {
+                    content.innerHTML = '<p class="text-center text-slate-500 font-bold py-8">目前無進行中的案件</p>';
+                } else {
+                    cases.forEach(c => {
+                        const btn = document.createElement('button');
+                        btn.className = 'w-full py-4 px-5 bg-slate-800 hover:bg-purple-700 border border-slate-600 rounded-xl text-sm font-black text-white text-left transition-colors flex justify-between items-center shadow-lg active:scale-95 mb-2';
+                        btn.innerHTML = `<span>📋 ${c}</span><span class="text-[10px] bg-slate-900 px-3 py-1 rounded-lg text-slate-300">點擊載入</span>`;
+                        btn.onclick = () => {
+                            // 點擊後，關閉彈窗、自動填入案件名稱、並執行載入
+                            document.getElementById('case-list-modal').classList.add('hidden');
+                            document.getElementById('incident-id-input').value = c;
+                            SESSION_NAME = c;
+                            fetchStateFromCloud(true); 
+                        };
+                        content.appendChild(btn);
+                    });
+                }
+                
+                // 顯示案件選單
+                document.getElementById('case-list-modal').classList.remove('hidden');
+                document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
+                document.getElementById('sync-text').innerText = '列表撈取完成';
+                
+            } else {
+                showDialog('alert','⚠️','撈取失敗', result.message || '無法取得案件列表。');
+            }
+        } catch(e) {
+            showDialog('alert','🔌','連線失敗','無法連接雲端，請檢查網路。');
+        }
+    }
+        
     // FIX #10: isManual 參數取代全域 event 判斷
     async function fetchStateFromCloud(isManual = false) {
         if (isManual) {
