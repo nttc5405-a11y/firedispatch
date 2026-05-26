@@ -219,7 +219,7 @@
         body.outdoor-mode #case-list-modal .bg-slate-950 { background-color: #142540 !important; }
     </style>
 </head>
-<body class="flex flex-col lg:flex-row h-screen" onclick="initAudioOnce()">
+<body class="flex flex-col lg:flex-row h-screen outdoor-mode" onclick="initAudioOnce()">
 
     <!-- ════════════════════════════════════════════
          自訂 Dialog（取代原生 alert / confirm / prompt）
@@ -265,8 +265,12 @@
             </div>
 
             <div class="flex gap-2">
-                <button id="outdoor-btn" onclick="toggleOutdoorMode()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center border border-slate-700 shadow-lg" title="戶外高對比模式">
-                    <span class="text-yellow-400 font-bold text-lg">☀</span>
+                <button id="outdoor-btn" onclick="toggleOutdoorMode()" class="w-10 h-10 bg-yellow-500 hover:bg-yellow-400 rounded-xl flex items-center justify-center border border-yellow-400 shadow-lg" title="切換回夜間模式">
+                    <span class="text-white font-bold text-lg">☀</span>
+                </button>
+                <button onclick="addNote()" class="px-3 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center border border-slate-700 shadow-lg gap-1" title="新增指揮備註">
+                    <span class="text-emerald-400 font-bold text-base">✏️</span>
+                    <span class="text-emerald-400 font-black text-xs">備註</span>
                 </button>
                 <button onclick="toggleManual()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center border border-slate-700 shadow-lg">
                     <span class="text-blue-400 font-bold">？</span>
@@ -1477,17 +1481,26 @@
 
     function toggleManual() { document.getElementById('manual-modal').classList.toggle('hidden'); }
 
+    // ── 指揮備註 ─────────────────────────────────────
+    async function addNote() {
+        const text = await showDialog('prompt', '✏️', '新增指揮備註', '輸入備註內容，將一併記錄至指揮日誌：');
+        if (!text || !text.trim()) return;
+        addLog('指揮備註', `📝 ${text.trim()}`);
+        playSound('sync');
+        markDirty();
+    }
+
     // ── 戶外高對比模式切換 ──────────────────────────────
     function toggleOutdoorMode() {
         const isOutdoor = document.body.classList.toggle('outdoor-mode');
         const btn = document.getElementById('outdoor-btn');
         if (isOutdoor) {
-            btn.classList.replace('bg-slate-800', 'bg-yellow-500');
-            btn.classList.replace('border-slate-700', 'border-yellow-400');
+            btn.className = 'w-10 h-10 bg-yellow-500 hover:bg-yellow-400 rounded-xl flex items-center justify-center border border-yellow-400 shadow-lg';
+            btn.querySelector('span').className = 'text-white font-bold text-lg';
             btn.title = '切換回夜間模式';
         } else {
-            btn.classList.replace('bg-yellow-500', 'bg-slate-800');
-            btn.classList.replace('border-yellow-400', 'border-slate-700');
+            btn.className = 'w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center border border-slate-700 shadow-lg';
+            btn.querySelector('span').className = 'text-yellow-400 font-bold text-lg';
             btn.title = '戶外高對比模式';
         }
     }
