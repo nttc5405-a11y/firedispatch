@@ -354,6 +354,21 @@
                     <span id="unit-display" class="font-mono text-sm font-black text-emerald-400 w-4 text-center">1</span>
                     <button onpointerdown="startAdjustHold(this, () => adjustUnits(1))" onpointerup="cancelAdjustHold(this)" onpointerleave="cancelAdjustHold(this)" onpointercancel="cancelAdjustHold(this)" oncontextmenu="return false;" style="touch-action: none; -webkit-touch-callout: none;" class="text-slate-400 hover:text-white px-3 py-1 font-black transition-colors">+</button>
                 </div>
+                <!-- 大空間場景切換（長按 1 秒） -->
+                <div class="flex items-center bg-slate-950 rounded-lg px-2 py-1 border border-slate-800 select-none">
+                    <span class="text-[10px] text-slate-500 font-black mr-1">場景</span>
+                    <button
+                        id="scene-btn"
+                        onpointerdown="startSceneHold(this)"
+                        onpointerup="cancelSceneHold(this)"
+                        onpointerleave="cancelSceneHold(this)"
+                        onpointercancel="cancelSceneHold(this)"
+                        oncontextmenu="return false;"
+                        style="touch-action: none; -webkit-touch-callout: none;"
+                        class="text-slate-400 hover:text-white px-3 py-1 font-black transition-colors text-[10px]">
+                        🏢 建築
+                    </button>
+                </div>
             </div>
             
             <!-- 🌟 補回遺失的同步狀態區塊 🌟 -->
@@ -527,24 +542,72 @@
                         氣瓶管制與警報提示
                     </h4>
                     <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
-                        <li><b>定時回報：</b>預設每 10 分鐘發出<b class="text-blue-400">「雙響提示音與藍色呼吸燈」</b>（點擊該區塊更新氣壓後，自動重新起算 10 分鐘）。</li>
-                        <li><b>預警機制：</b>推算耗氧低於 <b class="text-orange-400">100 Bar</b> 時，觸發橘燈慢閃與警告音。</li>
-                        <li><b>緊急撤離：</b>氣壓低於 <b class="text-red-500">50 Bar</b> 時，觸發紅燈快閃與急促警示音。</li>
+                        <li><b>定時回報：</b>小組入室 10 分鐘後自動發出<b class="text-blue-400">「雙響提示音與藍色呼吸燈」</b>，提醒回報氣量。</li>
+                        <li><b class="text-orange-400">橘燈預警：</b>推算氣壓低於 <b class="text-orange-400">100 Bar</b> 時，觸發橘燈慢閃與警告音。</li>
+                        <li><b class="text-red-400">緊急撤離：</b>氣壓低於 <b class="text-red-400">50 Bar</b> 時，觸發紅燈快閃與急促警示音。</li>
+                        <li><b class="text-slate-300">警示精準度：</b>系統每 <b class="text-emerald-400">10 秒</b>執行一次氣壓偵測，在預設消耗率（10 Bar/min）下，觸發誤差 <b class="text-emerald-400">＜ 2 Bar</b>，幾乎即時。</li>
+                        <li>現場回報新氣量後，請在部署資訊面板點擊<b>「📲 更新氣壓」</b>輸入，系統即重置計算基準。</li>
                     </ul>
                 </section>
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
-                        <span class="w-6 h-6 bg-yellow-600 rounded-full flex items-center justify-center text-[10px]">4</span>
-                        MAYDAY 啟動方式
+                        <span class="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center text-[10px]">4</span>
+                        防誤觸長按說明
                     </h4>
-                    <p class="text-slate-400 pl-8"><b class="text-red-400">長按「🚨 MAYDAY」按鈕 1.5 秒</b>以觸發警報，防止誤觸。</p>
+                    <p class="text-slate-400 pl-8 mb-2">以下按鈕均需<b class="text-yellow-300">長按</b>才能觸發，避免緊張操作下的意外碰觸。按下後底部出現<b>進度條</b>，鬆手即取消。</p>
+                    <div class="pl-8 space-y-2">
+                        <div class="bg-slate-800/60 rounded-xl px-4 py-3 flex items-start gap-3">
+                            <span class="text-red-400 text-lg mt-0.5">🚨</span>
+                            <div>
+                                <p class="text-white font-black text-[12px]">MAYDAY — 長按 1.5 秒</p>
+                                <p class="text-slate-400 text-[11px]">觸發全體警報，畫面閃紅、警報音持續 5 秒。再次長按可解除。</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800/60 rounded-xl px-4 py-3 flex items-start gap-3">
+                            <span class="text-slate-300 text-lg mt-0.5">🛑</span>
+                            <div>
+                                <p class="text-white font-black text-[12px]">結案 — 長按 3 秒</p>
+                                <p class="text-slate-400 text-[11px]">案件結束，分頁重命名為「＿已結案」，雲端自動封存。觀看模式下無法操作。</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800/60 rounded-xl px-4 py-3 flex items-start gap-3">
+                            <span class="text-blue-400 text-lg mt-0.5">±</span>
+                            <div>
+                                <p class="text-white font-black text-[12px]">地上(F) / 地下(B) / 棟數(U) ± — 長按 1 秒</p>
+                                <p class="text-slate-400 text-[11px]">按鈕變紅後放開即完成，避免操作中誤增減樓層或棟數。</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800/60 rounded-xl px-4 py-3 flex items-start gap-3">
+                            <span class="text-amber-400 text-lg mt-0.5">🏟</span>
+                            <div>
+                                <p class="text-white font-black text-[12px]">場景切換（建築 ⇌ 大空間）— 長按 1 秒</p>
+                                <p class="text-slate-400 text-[11px]"><b class="text-white">一般建築</b>：樓層/地下室格局；<b class="text-amber-300">大空間</b>：A/B/C/D/E 五區橢圓佈局（倉庫、體育館等）。場景設定會同步至雲端，觀看端一致顯示。</p>
+                            </div>
+                        </div>
+                    </div>
                 </section>
                 <section class="space-y-2">
                     <h4 class="text-white font-black flex items-center gap-2">
-                        <span class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-[10px]">5</span>
+                        <span class="w-6 h-6 bg-cyan-600 rounded-full flex items-center justify-center text-[10px]">5</span>
+                        氣量消耗率設定
+                    </h4>
+                    <p class="text-slate-400 pl-8 mb-2">系統預設空氣消耗率為 <b class="text-cyan-300">10 Bar / 分鐘</b>（中等強度攻擊作業估算值）。如需調整，請以文字編輯器開啟 <code class="bg-slate-800 px-2 py-0.5 rounded text-emerald-300 text-[11px]">index.html</code>，搜尋並修改以下這一行：</p>
+                    <div class="pl-8">
+                        <code class="block bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-emerald-300 text-[11px] font-mono">const CONSUMPTION_PER_MIN = 10; // ← 修改此數值（單位：Bar/分鐘）</code>
+                    </div>
+                    <ul class="text-slate-400 pl-8 mt-2 space-y-1 list-disc list-inside text-[12px]">
+                        <li>輕度作業建議：<b class="text-emerald-400">8 Bar/min</b></li>
+                        <li>標準中強度（預設）：<b class="text-cyan-400">10 Bar/min</b></li>
+                        <li>高強度攻擊或濃煙環境：<b class="text-orange-400">12–15 Bar/min</b></li>
+                        <li>儲存後重新整理頁面即生效，無需重新部署</li>
+                    </ul>
+                </section>
+                <section class="space-y-2">
+                    <h4 class="text-white font-black flex items-center gap-2">
+                        <span class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-[10px]">6</span>
                         戶外高對比模式
                     </h4>
-                    <p class="text-slate-400 pl-8">在戶外陽光直射下操作時，點擊右上角 <b class="text-yellow-300">「☀」按鈕</b> 切換為戶外模式。按鈕變為<b class="text-yellow-300">黃色</b>表示已啟用，再按一次切回夜間模式。</p>
+                    <p class="text-slate-400 pl-8">在戶外陽光直射下操作時，點擊右上角 <b class="text-yellow-300">「☀」按鈕</b> 切換（預設已啟用）。按鈕呈<b class="text-yellow-300">黃色</b>表示已啟用，再按一次切回夜間模式。</p>
                     <ul class="text-slate-400 pl-8 space-y-1 list-disc list-inside">
                         <li>背景提亮為深藍色，消除全黑底反光問題</li>
                         <li>所有灰色說明文字強制顯示為亮白色</li>
@@ -609,6 +672,8 @@
     let lastServerTs   = 0;      // 上次成功同步的伺服器時間戳，用於多裝置衝突偵測
     let _syncInProgress = false; // 防止並行發送多個同步請求（行動裝置網路切換保護）
     let _syncRetryCount = 0;     // 網路失敗重試計數
+    let sceneMode      = 'building'; // 'building' | 'large'（大空間場景）
+    let sceneTimer     = null;
 
     const CONSUMPTION_PER_MIN = 10;
     const LOG_DISPLAY_LIMIT   = 100;  // FIX #8: Log DOM 上限
@@ -705,8 +770,21 @@
         addLog("案件結束", "🛑 案件宣告結束，系統準備凍結並更改分頁名稱。");
         playSound('sync');
 
-        // 1. 先用「原本的名字」強制執行一次最後上傳，把最終日誌寫進去
-        await syncToCloud(); 
+        // ── 結案前置：停止定時器，等候進行中的同步完成，再強制執行最終上傳
+        // 若不停止，定時器可能在結案期間觸發新同步並搶佔 _syncInProgress 鎖，
+        // 導致結案前的最終上傳被跳過，GAS 找不到分頁而改名失敗。
+        clearInterval(syncIntervalId);
+
+        // 等候進行中的同步完成（最多 8 秒）
+        let _waitMs = 0;
+        while (_syncInProgress && _waitMs < 8000) {
+            await new Promise(r => setTimeout(r, 250));
+            _waitMs += 250;
+        }
+        _syncInProgress = false; // 強制重置，確保最終同步一定能執行
+
+        // 1. 強制執行最後一次上傳，把最終日誌與快照寫入雲端
+        await syncToCloud();
 
         const oldName = SESSION_NAME;
         const newName = SESSION_NAME + '_已結案';
@@ -753,8 +831,16 @@
         if (mapDirty) { renderMap(); mapDirty = false; }
     }, 2000);
 
-    // 氣瓶狀態每分鐘檢查一次（不需每秒）
-    setInterval(() => { checkAllAirAlerts(); }, 60000);
+    // 氣瓶警示每 10 秒檢查一次
+    // 消耗率 10 bar/min → 每 10 秒最多消耗 1.67 bar
+    // 最大警示延遲從舊版 ≤60s（約差 10bar）縮短至 ≤10s（差 <2bar），確保警示幾乎即時
+    setInterval(() => { checkAllAirAlerts(); }, 10000);
+
+    // 氣量數值顯示每 10 秒刷新一次（不觸發警報，只更新卡片數字）
+    // 10 bar/min → 約 1.67 bar / 10s，確保畫面不超過 10 秒落差
+    setInterval(() => {
+        if (!isReadOnly && deployedTeams.some(t => t.usesAir && t.location !== '待命區')) markDirty();
+    }, 10000);
 
     // ─────────────────────────────────────────────────
     // 自訂 Dialog（FIX #4 的基礎，取代 alert/confirm/prompt）
@@ -1200,17 +1286,41 @@
         document.getElementById('pos-staging').appendChild(createBtn('待命區', false));
 
         const inside = document.getElementById('pos-inside');
-        inside.style.display             = 'grid';
-        inside.style.gridTemplateColumns = `repeat(${unitCount}, 1fr)`;
-        inside.style.gap                 = '8px';
-        for (let f = floorCount; f >= 1; f--) {
-            for (let u = 0; u < unitCount; u++) {
-                inside.appendChild(createBtn((unitCount>1 ? String.fromCharCode(65+u)+'棟 ' : '') + f + 'F'));
+        inside.style.gap = '8px';
+
+        if (sceneMode === 'large') {
+            // ── 大空間場景：B/C 上排、E 中央橢圓、A/D 下排 ──
+            inside.style.display             = 'grid';
+            inside.style.gridTemplateColumns = '1fr 1fr';
+            inside.style.gridTemplateRows    = 'auto auto auto';
+
+            // 上排：B（左）、C（右）
+            inside.appendChild(createBtn('B區'));
+            inside.appendChild(createBtn('C區'));
+
+            // 中央：E 橫跨兩欄
+            const eBtn = createBtn('E區（中心）');
+            eBtn.style.gridColumn   = '1 / 3';
+            eBtn.style.borderRadius = '999px';  // 橢圓造型
+            eBtn.style.minHeight    = '70px';
+            inside.appendChild(eBtn);
+
+            // 下排：A（左）、D（右）
+            inside.appendChild(createBtn('A區'));
+            inside.appendChild(createBtn('D區'));
+        } else {
+            // ── 一般建築場景 ──
+            inside.style.display             = 'grid';
+            inside.style.gridTemplateColumns = `repeat(${unitCount}, 1fr)`;
+            for (let f = floorCount; f >= 1; f--) {
+                for (let u = 0; u < unitCount; u++) {
+                    inside.appendChild(createBtn((unitCount>1 ? String.fromCharCode(65+u)+'棟 ' : '') + f + 'F'));
+                }
             }
-        }
-        for (let b = 1; b <= basementCount; b++) {
-            for (let u = 0; u < unitCount; u++) {
-                inside.appendChild(createBtn((unitCount>1 ? String.fromCharCode(65+u)+'棟 ' : '') + 'B' + b));
+            for (let b = 1; b <= basementCount; b++) {
+                for (let u = 0; u < unitCount; u++) {
+                    inside.appendChild(createBtn((unitCount>1 ? String.fromCharCode(65+u)+'棟 ' : '') + 'B' + b));
+                }
             }
         }
 
@@ -1465,6 +1575,34 @@
     function adjustBasements(d) { if(isReadOnly) return; basementCount = Math.max(0, Math.min(5,  basementCount+d)); document.getElementById('basement-display').innerText = basementCount; markDirty(); }
     function adjustUnits(d)     { if(isReadOnly) return; unitCount     = Math.max(1, Math.min(5,  unitCount+d));     document.getElementById('unit-display').innerText     = unitCount;     markDirty(); }
 
+    // ── 大空間場景長按切換 ──────────────────────────────
+    function startSceneHold(btn) {
+        if (isReadOnly) return;
+        btn.style.color = '#f59e0b';
+        sceneTimer = setTimeout(() => {
+            btn.style.color = '';
+            toggleSceneMode();
+            playBeep(800, 'sine', 0.1, 0.06);
+        }, 1000);
+    }
+    function cancelSceneHold(btn) {
+        if (sceneTimer) clearTimeout(sceneTimer);
+        btn.style.color = '';
+    }
+    function toggleSceneMode() {
+        sceneMode = (sceneMode === 'building') ? 'large' : 'building';
+        const btn = document.getElementById('scene-btn');
+        if (sceneMode === 'large') {
+            btn.innerText   = '🏟 大空間';
+            btn.style.color = '#f59e0b';
+        } else {
+            btn.innerText   = '🏢 建築';
+            btn.style.color = '';
+        }
+        addLog('場景切換', `🗺 切換為${sceneMode === 'large' ? '大空間' : '一般建築'}場景`);
+        markDirty();
+    }
+
     function exportLogs() {
         let csv = '\uFEFF時間,動作,詳情\n';
         logHistory.forEach(r => csv += `"${r.time}","${r.action}","${r.msg}"\n`);
@@ -1524,7 +1662,8 @@
             deployedTeams: teamsWithSnapshot,
             floorCount, basementCount, unitCount,
             logHistory,
-            personnelData // 🌟 修正：把動態新增的人員名單也一起打包上傳 🌟
+            personnelData, // 🌟 修正：把動態新增的人員名單也一起打包上傳 🌟
+            sceneMode      // 大空間 / 一般建築場景，確保觀看端與主控端一致
         });
 
         const logsToSync = logHistory.slice(lastSyncedLogIndex);
@@ -1710,6 +1849,21 @@
                         logEl.innerHTML = `<span class="text-blue-400 font-black text-[10px]">[${log.time}]</span> <span class="text-white font-black">${log.action}</span><br><span class="text-slate-400">${log.msg}</span>`;
                         board.prepend(logEl);
                     });
+                }
+
+                // 還原大空間場景模式，並同步更新場景切換按鈕外觀
+                if (state.sceneMode && state.sceneMode !== sceneMode) {
+                    sceneMode = state.sceneMode;
+                    const sceneBtn = document.getElementById('scene-btn');
+                    if (sceneBtn) {
+                        if (sceneMode === 'large') {
+                            sceneBtn.innerText   = '🏟 大空間';
+                            sceneBtn.style.color = '#f59e0b';
+                        } else {
+                            sceneBtn.innerText   = '🏢 建築';
+                            sceneBtn.style.color = '';
+                        }
+                    }
                 }
 
                 document.getElementById('floor-display').innerText    = floorCount;
