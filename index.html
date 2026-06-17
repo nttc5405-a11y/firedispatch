@@ -324,6 +324,12 @@
                     <button onclick="startScanner()" class="bg-emerald-700 hover:bg-emerald-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all">
                         📷 掃碼報到
                     </button>
+                    <button onclick="startNewCase()" class="bg-slate-600 hover:bg-slate-500 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all">
+                        🆕 新案件
+                    </button>
+                    <button onclick="startTestCase()" class="bg-slate-700 hover:bg-slate-600 px-4 py-1.5 rounded-lg text-xs font-black text-amber-400 border border-amber-700 shadow-lg active:scale-95 transition-all">
+                        🧪 測試案件
+                    </button>
                     <button id="load-state-btn" onclick="openCaseSelector()" class="bg-purple-700 hover:bg-purple-600 px-4 py-1.5 rounded-lg text-xs font-black text-white shadow-lg active:scale-95 transition-all flex items-center gap-1">
                         📥 載入現場狀況
                     </button>
@@ -686,16 +692,72 @@
         '侷限火勢':'侷','殘火處理':'殘','幕僚作業':'幕','RIT':'RIT','待命集結':'待'
     };
 
-    // FIX #5: SESSION_NAME 加入裝置隨機尾碼，避免多裝置同分鐘衝突
-    const d = new Date();
-    const _rnd = Math.random().toString(36).slice(2,5).toUpperCase();
-    let SESSION_NAME = '火警_' +
-        String(d.getMonth()+1).padStart(2,'0') +
-        String(d.getDate()).padStart(2,'0') + '_' +
-        String(d.getHours()).padStart(2,'0') +
-        String(d.getMinutes()).padStart(2,'0') + '_' + _rnd;
+    // SESSION_NAME：優先沿用 localStorage，避免重新整理產生新分頁
+    function generateSessionName() {
+        const d = new Date();
+        const rnd = Math.random().toString(36).slice(2,5).toUpperCase();
+        return '火警_' +
+            String(d.getMonth()+1).padStart(2,'0') +
+            String(d.getDate()).padStart(2,'0') + '_' +
+            String(d.getHours()).padStart(2,'0') +
+            String(d.getMinutes()).padStart(2,'0') + '_' + rnd;
+    }
+
+    const _storedSession = localStorage.getItem('ics_session_name');
+    let SESSION_NAME = (_storedSession && !_storedSession.includes('_已結案'))
+        ? _storedSession
+        : generateSessionName();
+    localStorage.setItem('ics_session_name', SESSION_NAME);
 
     document.getElementById('incident-id-input').value = SESSION_NAME;
+
+    function startTestCase() {
+        showDialog('confirm','🧪','測試模式',
+            `將建立一個 TEST_ 開頭的測試案件。\n完成後可從試算表「🔧 系統管理」選單批次刪除。\n\n確定開始測試？`
+        ).then(ok => {
+            if (!ok) return;
+            const d = new Date();
+            const rnd = Math.random().toString(36).slice(2,5).toUpperCase();
+            SESSION_NAME = 'TEST_' +
+                String(d.getMonth()+1).padStart(2,'0') +
+                String(d.getDate()).padStart(2,'0') + '_' +
+                String(d.getHours()).padStart(2,'0') +
+                String(d.getMinutes()).padStart(2,'0') + '_' + rnd;
+            localStorage.setItem('ics_session_name', SESSION_NAME);
+            deployedTeams = []; logHistory = []; personnelData = {};
+            lastSyncedLogIndex = 0;
+            document.getElementById('incident-id-input').value = SESSION_NAME;
+            document.getElementById('roster-container').innerHTML =
+                '<span class="text-[10px] text-slate-500 italic">點擊上方按鈕載入「本單位今日出勤人員」...</span>';
+            document.getElementById('toggle-roster-btn').classList.add('hidden');
+            document.getElementById('status-board').innerHTML = '';
+            addLog('系統', `🧪 測試案件建立：${SESSION_NAME}`);
+            populateUnitSelect();
+            markDirty();
+        });
+    }
+
+    function startNewCase() {
+        showDialog('confirm','🆕','開新案件',
+            `目前案件：${SESSION_NAME}\n\n確定要結束並開立新案件？\n（目前頁面資料將被清除）`
+        ).then(ok => {
+            if (!ok) return;
+            SESSION_NAME = generateSessionName();
+            localStorage.setItem('ics_session_name', SESSION_NAME);
+            deployedTeams  = [];
+            logHistory     = [];
+            personnelData  = {};
+            lastSyncedLogIndex = 0;
+            document.getElementById('incident-id-input').value = SESSION_NAME;
+            document.getElementById('roster-container').innerHTML =
+                '<span class="text-[10px] text-slate-500 italic">點擊上方按鈕載入「本單位今日出勤人員」...</span>';
+            document.getElementById('toggle-roster-btn').classList.add('hidden');
+            document.getElementById('status-board').innerHTML = '';
+            addLog('系統', `🆕 新案件建立：${SESSION_NAME}`);
+            populateUnitSelect();
+            markDirty();
+        });
+    }
 
     // ─────────────────────────────────────────────────
     // FIX #1: MAYDAY 長按觸發（1.5 秒）
@@ -812,8 +874,9 @@
                 
                 document.getElementById('sync-status').innerText = '👁️ CASE CLOSED (已結案)';
                 document.getElementById('sync-status').className = 'text-[10px] text-red-400 font-bold uppercase tracking-widest mb-2 mt-1';
-                
-                showDialog('alert','🛑','案件結束',`已成功結案！\n分頁名稱已更新為：\n${SESSION_NAME}\n\n系統已停止計時並轉為唯讀狀態。`);
+                // 結案後清除 localStorage，下次載入頁面會產生新案件
+                localStorage.removeItem('ics_session_name');
+                showDialog('alert','🛑','案件結束',`已成功結案！\n分頁名稱已更新為：\n${SESSION_NAME}\n\n系統已停止計時並轉為唯讀狀態。\n下次開啟頁面將自動建立新案件。`);
             } else {
                 showDialog('alert','⚠️','結案異常', res.message || '結案名稱更新失敗。');
             }
