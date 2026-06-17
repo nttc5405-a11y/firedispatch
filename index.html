@@ -973,47 +973,9 @@
     // 人員名冊
     // ─────────────────────────────────────────────────
     async function loadPersonnel() {
-        try {
-            // 優先使用 GAS 結構化 API，避免 CSV 欄位順序問題
-            const response = await fetch(`${GAS_WEB_APP_URL}?action=getDutyRoster&token=${encodeURIComponent(API_TOKEN)}`);
-            const res = await response.json();
-            if (res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-                personnelData = {};
-                res.data.forEach(person => {
-                    const unit = (person.unit || '').trim();
-                    const name = (person.name || '').trim();
-                    if (unit && name) {
-                        if (!personnelData[unit]) personnelData[unit] = [];
-                        if (!personnelData[unit].includes(name)) personnelData[unit].push(name);
-                    }
-                });
-            } else {
-                throw new Error('GAS 回傳空資料');
-            }
-        } catch(e) {
-            // GAS 失敗時退回 CSV（舊版相容）
-            try {
-                const csvRes = await fetch(GOOGLE_SHEET_CSV_URL);
-                const text   = await csvRes.text();
-                personnelData = {};
-                const lines = text.split(/\r?\n/);
-                // 讀標題列判斷欄數，避免空姓名欄被誤判為舊版兩欄格式
-                const headerCols = lines[0] ? lines[0].split(',').filter(c => c.trim() !== '').length : 0;
-                const useThree = headerCols >= 3;
-                lines.slice(1).forEach(r => {
-                    if (!r.trim()) return;
-                    const cols = r.split(',');
-                    const unit = (useThree ? cols[1] : cols[0] || '').trim();
-                    const name = (useThree ? cols[2] : cols[1] || '').trim();
-                    if (unit && name) {
-                        if (!personnelData[unit]) personnelData[unit] = [];
-                        personnelData[unit].push(name);
-                    }
-                });
-            } catch(e2) {
-                personnelData = { "成功分隊": ["賴君瑋","鍾昌霖","蕭易林","林征利"] };
-            }
-        }
+        // 部署選單只顯示已報到人員，初始為空
+        // 人員透過「上班名冊點名」或「掃碼報到」加入後才出現在部署選單
+        personnelData = {};
         populateUnitSelect();
     }
 
