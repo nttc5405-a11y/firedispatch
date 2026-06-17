@@ -261,6 +261,10 @@
                         <span class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"></span>
                         <span class="text-[10px] text-slate-400 font-black tracking-widest">熱區部署 <span id="stat-deployed" class="text-red-400 font-mono text-base ml-1">0</span></span>
                     </div>
+                    <div onclick="showPersonnelList('undeployed')" class="cursor-pointer hover:bg-slate-800 active:scale-95 transition-all bg-slate-900 border border-amber-900/50 px-3 py-1 rounded-lg flex items-center gap-2 shadow-inner">
+                        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                        <span class="text-[10px] text-slate-400 font-black tracking-widest">待派遣 <span id="stat-undeployed" class="text-amber-400 font-mono text-base ml-1">0</span></span>
+                    </div>
                 </div>
             </div>
 
@@ -1409,15 +1413,28 @@
             }
         }
 
-        let total=0, standby=0, deployed=0;
+        let standby=0, deployed=0;
+        const deployedMembers = new Set();
         deployedTeams.forEach(t => {
-            total   += t.members.length;
             if (t.location === '待命區') standby  += t.members.length;
             else                          deployed += t.members.length;
+            t.members.forEach(m => deployedMembers.add(m));
         });
-        document.getElementById('stat-total').innerText    = total;
-        document.getElementById('stat-standby').innerText  = standby;
-        document.getElementById('stat-deployed').innerText = deployed;
+
+        // 現場總數 = 所有已報到人員（含待派遣）
+        let total = 0;
+        let undeployedCount = 0;
+        for (const unit in personnelData) {
+            personnelData[unit].forEach(name => {
+                total++;
+                if (!deployedMembers.has(name)) undeployedCount++;
+            });
+        }
+
+        document.getElementById('stat-total').innerText      = total;
+        document.getElementById('stat-standby').innerText    = standby;
+        document.getElementById('stat-deployed').innerText   = deployed;
+        document.getElementById('stat-undeployed').innerText = undeployedCount;
     }
 
     // ─────────────────────────────────────────────────
@@ -1628,6 +1645,40 @@
         if (type === 'total')    { title.innerText = '現場總人數名單'; title.className = 'text-xl font-black text-blue-400';    filteredTeams = deployedTeams; }
         else if (type === 'standby')  { title.innerText = '集結待命名單';   title.className = 'text-xl font-black text-emerald-400'; filteredTeams = deployedTeams.filter(t => t.location === '待命區'); }
         else if (type === 'deployed') { title.innerText = '熱區部署名單';   title.className = 'text-xl font-black text-red-400';    filteredTeams = deployedTeams.filter(t => t.location !== '待命區'); }
+
+        // 待派遣：已報到但不在任何 deployedTeams 中
+        if (type === 'undeployed') {
+            title.innerText  = '待派遣名單';
+            title.className  = 'text-xl font-black text-amber-400';
+            const deployedMembers = new Set();
+            deployedTeams.forEach(t => t.members.forEach(m => deployedMembers.add(m)));
+            // 依單位分組
+            const groups = {};
+            for (const unit in personnelData) {
+                personnelData[unit].forEach(name => {
+                    if (!deployedMembers.has(name)) {
+                        if (!groups[unit]) groups[unit] = [];
+                        groups[unit].push(name);
+                    }
+                });
+            }
+            const unitKeys = Object.keys(groups);
+            if (unitKeys.length === 0) {
+                content.innerHTML = '<p class="text-center text-slate-500 font-bold py-8">所有報到人員均已派遣 ✅</p>';
+            } else {
+                content.innerHTML = unitKeys.map(unit =>
+                    `<div class="bg-slate-800 p-4 rounded-2xl border border-amber-500/30 shadow-lg mb-3">
+                        <div class="text-[11px] text-amber-400 font-black mb-2 uppercase tracking-widest">🚒 ${unit}</div>
+                        <div class="flex flex-wrap gap-2">${groups[unit].map(name =>
+                            `<span class="px-3 py-1.5 bg-slate-900 border border-amber-600/40 rounded-lg text-sm font-bold text-white">⏳ ${name}</span>`
+                        ).join('')}</div>
+                    </div>`
+                ).join('');
+            }
+            modal.classList.remove('hidden');
+            return;
+        }
+
         if (filteredTeams.length === 0) {
             content.innerHTML = '<p class="text-center text-slate-500 font-bold py-8">目前無人員紀錄</p>';
         } else {
